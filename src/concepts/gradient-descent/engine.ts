@@ -497,11 +497,6 @@ export function mount(root: HTMLElement): () => void {
       el("strong", {}, "Momentum"),
       " builds speed along the trough.",
     ),
-    el(
-      "p",
-      { class: "gd-tip" },
-      "Drag to orbit the surface. Type your own function above — use x for a curve, or x and y for a surface.",
-    ),
   );
 
   const sceneHolder = el(

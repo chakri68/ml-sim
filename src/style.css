@@ -76,21 +76,39 @@ a {
   outline-offset: 1px;
 }
 
-/* Thin themed scrollbars */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: #3a362e transparent;
-}
+/* Thin themed scrollbars.
+   Chromium/WebKit gets the ::-webkit-scrollbar custom track (which has no
+   stepper arrows). We must NOT set the standard scrollbar-width/-color there:
+   once those are present Chromium switches to the standard scrollbar model,
+   renders the OS up/down arrows, and ignores every ::-webkit-scrollbar rule.
+   So the standard props are scoped to engines without ::-webkit-scrollbar
+   support (Firefox), where `thin` is also arrow-free. */
 *::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 14px;
+  height: 14px;
+}
+*::-webkit-scrollbar-track {
+  /* keep the thumb clear of rounded panel corners */
+  margin: 8px 0;
+  background: transparent;
 }
 *::-webkit-scrollbar-thumb {
   background: #3a362e;
   border-radius: 999px;
+  /* transparent border + padding-box clip insets the thumb, leaving a ~4px
+     gap on every side so it floats instead of hugging the edge */
+  border: 4px solid transparent;
+  background-clip: padding-box;
 }
 *::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 176, 0, 0.45);
+  background-clip: padding-box;
+}
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #3a362e transparent;
+  }
 }
 
 #app {
@@ -367,6 +385,7 @@ a {
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 12px;
+  grid-column: 1;
 }
 .gd-scene {
   width: 100%;
@@ -541,6 +560,10 @@ a {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  grid-column: 2;
+  height: 0;
+  min-height: 100%;
+  overflow-y: auto;
 }
 .gd-status-row {
   display: flex;

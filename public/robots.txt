@@ -1,0 +1,5 @@
+# Replace mlviz.example.com with your real production domain.
+User-agent: *
+Allow: /
+
+Sitemap: https://ml-sims.chakri.me/sitemap.xml

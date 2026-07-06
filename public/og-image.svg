@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" font-family="'JetBrains Mono','SFMono-Regular',Menlo,monospace">
+  <defs>
+    <radialGradient id="glow" cx="28%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#1a1305"/>
+      <stop offset="55%" stop-color="#080602"/>
+      <stop offset="100%" stop-color="#000000"/>
+    </radialGradient>
+    <linearGradient id="curve" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#cc8a00"/>
+      <stop offset="100%" stop-color="#ffb000"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#glow)"/>
+
+  <!-- faint grid -->
+  <g stroke="rgba(255,176,0,0.06)" stroke-width="1">
+    <path d="M0 90 H1200 M0 180 H1200 M0 270 H1200 M0 360 H1200 M0 450 H1200 M0 540 H1200"/>
+    <path d="M120 0 V630 M240 0 V630 M360 0 V630 M480 0 V630 M600 0 V630 M720 0 V630 M840 0 V630 M960 0 V630 M1080 0 V630"/>
+  </g>
+
+  <!-- gradient-descent curve with stepping ball -->
+  <g transform="translate(690,300)">
+    <path d="M -20 -120 Q 130 300 250 40 Q 300 -70 420 -120"
+          fill="none" stroke="url(#curve)" stroke-width="5" stroke-linecap="round" opacity="0.9"/>
+    <circle cx="10" cy="-95" r="7" fill="#ffb000" opacity="0.35"/>
+    <circle cx="70" cy="10" r="8" fill="#ffb000" opacity="0.5"/>
+    <circle cx="140" cy="120" r="9" fill="#ffb000" opacity="0.7"/>
+    <circle cx="205" cy="90" r="11" fill="#ffb000"/>
+    <circle cx="205" cy="90" r="20" fill="none" stroke="#ffb000" stroke-width="2" opacity="0.4"/>
+  </g>
+
+  <!-- kicker -->
+  <text x="90" y="150" fill="#8b8574" font-size="26" letter-spacing="4">▚ ML VISUALIZATIONS LAB</text>
+
+  <!-- title -->
+  <text x="88" y="250" fill="#f5f0e4" font-size="72" font-weight="700">Machine Learning,</text>
+  <text x="88" y="330" fill="#ffb000" font-size="72" font-weight="700">but you can see it move.</text>
+
+  <!-- subtitle -->
+  <text x="90" y="470" fill="#ece7da" font-size="30" opacity="0.85">Interactive visualizations of gradient descent,</text>
+  <text x="90" y="512" fill="#ece7da" font-size="30" opacity="0.85">optimizers &amp; loss surfaces — drag, break, understand.</text>
+</svg>

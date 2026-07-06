@@ -2,8 +2,75 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicons: SVG for modern browsers, ICO for legacy, Apple touch icon, manifest -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Primary meta -->
+    <title>
+      ML Visualizations Lab — Interactive Machine Learning, Visualized
+    </title>
+    <meta
+      name="description"
+      content="Interactive machine learning visualizations that turn ML concepts into experiments you can drag, break, and understand. Explore gradient descent, optimizers (SGD, Momentum, RMSProp, Adam), and 3D loss surfaces in your browser."
+    />
+    <meta
+      name="keywords"
+      content="machine learning visualization, gradient descent, optimizers, SGD, momentum, RMSProp, Adam, loss surface, deep learning, interactive, ML playground"
+    />
+    <meta name="author" content="ML Visualizations Lab" />
+    <meta name="theme-color" content="#000000" />
+    <meta name="color-scheme" content="dark" />
+    <link rel="canonical" href="https://ml-sims.chakri.me/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ML Visualizations Lab" />
+    <meta property="og:url" content="https://ml-sims.chakri.me/" />
+    <meta
+      property="og:title"
+      content="ML Visualizations Lab — Machine Learning, but you can see it move."
+    />
+    <meta
+      property="og:description"
+      content="Interactive visualizations that turn ML concepts into experiments you can drag, break, and understand. Explore gradient descent, optimizers, and 3D loss surfaces."
+    />
+    <meta
+      property="og:image"
+      content="https://ml-sims.chakri.me/og-image.png"
+    />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="ML Visualizations Lab — a gradient-descent curve on an amber-on-black terminal aesthetic."
+    />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="ML Visualizations Lab — Machine Learning, but you can see it move."
+    />
+    <meta
+      name="twitter:description"
+      content="Interactive visualizations of gradient descent, optimizers, and 3D loss surfaces you can drag, break, and understand."
+    />
+    <meta
+      name="twitter:image"
+      content="https://ml-sims.chakri.me/og-image.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="ML Visualizations Lab — a gradient-descent curve on an amber-on-black terminal aesthetic."
+    />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -14,10 +81,80 @@
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap"
       rel="stylesheet"
     />
-    <title>machine-learning-visualizations</title>
+
+    <!-- Structured data: the site + its collection of concepts -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "@id": "https://ml-sims.chakri.me/#website",
+            "url": "https://ml-sims.chakri.me/",
+            "name": "ML Visualizations Lab",
+            "description": "Interactive machine learning visualizations you can drag, break, and understand.",
+            "inLanguage": "en"
+          },
+          {
+            "@type": "CollectionPage",
+            "@id": "https://ml-sims.chakri.me/#collection",
+            "url": "https://ml-sims.chakri.me/",
+            "name": "ML Visualizations Lab",
+            "isPartOf": { "@id": "https://ml-sims.chakri.me/#website" },
+            "about": "Machine learning concepts explained through interactive visualizations.",
+            "mainEntity": {
+              "@type": "ItemList",
+              "itemListElement": [
+                {
+                  "@type": "ListItem",
+                  "position": 1,
+                  "url": "https://ml-sims.chakri.me/#/concepts/gradient-descent",
+                  "name": "Gradient Descent",
+                  "description": "Visualize how gradient descent and its variants (SGD, Momentum, RMSProp, Adam) update parameters to minimize a loss function, with custom functions and a 3D surface view."
+                }
+              ]
+            }
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <div id="app"></div>
+
+    <!-- Crawler / no-JS fallback: real content so the page is never blank. -->
+    <noscript>
+      <main
+        style="
+          max-width: 40rem;
+          margin: 4rem auto;
+          padding: 0 1.5rem;
+          font-family: system-ui, sans-serif;
+          color: #ece7da;
+          background: #000;
+        "
+      >
+        <h1>ML Visualizations Lab</h1>
+        <p>
+          Machine Learning, but you can see it move. A collection of interactive
+          visualizations that turn ML concepts into experiments you can drag,
+          break, reset, and understand.
+        </p>
+        <p>
+          <strong>This site requires JavaScript</strong> to run its interactive
+          visualizations. Please enable JavaScript to explore.
+        </p>
+        <h2>Concepts</h2>
+        <ul>
+          <li>
+            <a href="#/concepts/gradient-descent">Gradient Descent</a> — watch
+            optimizers (SGD, Momentum, RMSProp, Adam) move downhill in 1D and on
+            a 3D loss surface.
+          </li>
+        </ul>
+      </main>
+    </noscript>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
