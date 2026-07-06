@@ -63,7 +63,11 @@ export function renderHome(root: HTMLElement): () => void {
       el("span", {}, "Built with Vite + TypeScript + SVG."),
       el(
         "a",
-        { href: "https://github.com", target: "_blank", rel: "noreferrer" },
+        {
+          href: "https://github.com/chakri68/ml-sim",
+          target: "_blank",
+          rel: "noreferrer",
+        },
         "GitHub",
       ),
     ),
