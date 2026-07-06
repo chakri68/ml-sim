@@ -10,6 +10,7 @@ import {
 import { findOptimizer, optimizers, type Stepper } from "./optimizers.ts";
 import { createView2D } from "./view2d.ts";
 import { createView3D } from "./view3d.ts";
+import { createTabPanel } from "../../lib/tabs.ts";
 import type { EngineState, Status, View } from "./view.ts";
 
 const EPSILON = 0.05; // gradient-norm threshold for "at the minimum"
@@ -194,7 +195,7 @@ export function mount(root: HTMLElement): () => void {
       state.dim === 2
         ? createView3D(state.func, reducedMotion)
         : createView2D(state.func, reducedMotion);
-    sceneHolder.replaceChildren(view.el);
+    stageMain.replaceChildren(view.el);
     reset();
   }
 
@@ -499,15 +500,12 @@ export function mount(root: HTMLElement): () => void {
     ),
   );
 
-  const sceneHolder = el(
-    "div",
-    { class: "gd-scene-holder" },
-    view.el,
-    explanation,
-  );
+  const stageMain = el("div", { class: "concept-stage-main" }, view.el);
+  const stage = el("div", { class: "concept-stage" }, stageMain);
+
   const controls = el(
-    "aside",
-    { class: "gd-controls" },
+    "div",
+    { class: "side-controls" },
     el(
       "div",
       { class: "gd-status-row" },
@@ -544,23 +542,34 @@ export function mount(root: HTMLElement): () => void {
     ),
   );
 
-  const page = el(
-    "div",
-    { class: "gd-page" },
+  const panel = createTabPanel(
+    [
+      { id: "controls", label: "Controls", content: controls },
+      { id: "notes", label: "Notes", content: explanation },
+    ],
+    { ariaLabel: "Gradient descent panel" },
+  );
+
+  const aside = el(
+    "aside",
+    { class: "concept-aside" },
     el(
-      "header",
-      { class: "gd-header" },
-      el("a", { href: "#/", class: "gd-back" }, "← All concepts"),
-      el("h1", {}, "Gradient Descent"),
+      "div",
+      { class: "concept-aside-head" },
+      el("a", { href: "#/", class: "concept-back" }, "← All concepts"),
+      el("h1", { class: "concept-title" }, "Gradient Descent"),
       el(
         "p",
-        { class: "gd-sub" },
+        { class: "concept-sub" },
         "Look at the slope, step in the opposite direction, repeat — in 1D, in 3D, and with five optimizers.",
       ),
     ),
-    el("div", { class: "gd-main" }, sceneHolder, controls),
+    panel.el,
   );
 
+  const page = el("div", { class: "concept-shell" }, stage, aside);
+
+  document.body.classList.add("concept-open");
   root.replaceChildren(page);
   startSlider.field.style.display = state.dim === 1 ? "" : "none";
   syncButtons();
@@ -569,6 +578,7 @@ export function mount(root: HTMLElement): () => void {
   return () => {
     stop();
     view.dispose();
+    document.body.classList.remove("concept-open");
   };
 }
 

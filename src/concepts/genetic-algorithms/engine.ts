@@ -14,6 +14,7 @@ import {
   withWall,
 } from "./maze.ts";
 import { createView, type ViewState } from "./view.ts";
+import { createTabPanel } from "../../lib/tabs.ts";
 import type {
   AgentResult,
   CrossoverMethod,
@@ -647,17 +648,17 @@ export function mount(root: HTMLElement): () => void {
     graphSvg,
   );
 
-  const sceneHolder = el(
+  const stageMain = el("div", { class: "concept-stage-main" }, view.el);
+  const stage = el(
     "div",
-    { class: "ga-scene-holder" },
-    view.el,
-    graphWrap,
-    explanation,
+    { class: "concept-stage" },
+    stageMain,
+    el("div", { class: "concept-stage-foot" }, graphWrap),
   );
 
   const controls = el(
-    "aside",
-    { class: "ga-controls" },
+    "div",
+    { class: "side-controls" },
     el(
       "div",
       { class: "ga-status-row" },
@@ -706,23 +707,34 @@ export function mount(root: HTMLElement): () => void {
     ),
   );
 
-  const page = el(
-    "div",
-    { class: "ga-page" },
+  const panel = createTabPanel(
+    [
+      { id: "controls", label: "Controls", content: controls },
+      { id: "notes", label: "Notes", content: explanation },
+    ],
+    { ariaLabel: "Genetic algorithms panel" },
+  );
+
+  const aside = el(
+    "aside",
+    { class: "concept-aside" },
     el(
-      "header",
-      { class: "ga-header" },
-      el("a", { href: "#/", class: "ga-back" }, "← All concepts"),
-      el("h1", {}, "Genetic Algorithms"),
+      "div",
+      { class: "concept-aside-head" },
+      el("a", { href: "#/", class: "concept-back" }, "← All concepts"),
+      el("h1", { class: "concept-title" }, "Genetic Algorithms"),
       el(
         "p",
-        { class: "ga-sub" },
+        { class: "concept-sub" },
         "None of these agents know the maze. Watch a population evolve from random flailing into a path — survival of the least stupid.",
       ),
     ),
-    el("div", { class: "ga-main" }, sceneHolder, controls),
+    panel.el,
   );
 
+  const page = el("div", { class: "concept-shell" }, stage, aside);
+
+  document.body.classList.add("concept-open");
   root.replaceChildren(page);
   seed(true);
   syncButtons();
@@ -730,6 +742,7 @@ export function mount(root: HTMLElement): () => void {
   return () => {
     stop();
     view.dispose();
+    document.body.classList.remove("concept-open");
   };
 }
 
