@@ -12,10 +12,29 @@ const H = 4.5; // surface height in scene units
 const SEG = 90; // grid resolution per axis
 const LIFT = 0.12; // how far the marker floats above the surface
 
-// amber-phosphor heightmap: glowing amber valleys → dark amber peaks
-const C_LOW = new THREE.Color("#ffb000");
-const C_MID = new THREE.Color("#b3780a");
-const C_HIGH = new THREE.Color("#6b4a10");
+// Warm-phosphor height ramp: bright hot valleys → deep receding peaks. Stays in
+// the amber/orange/red family (no off-theme hues) but spans a wide luminance and
+// warm-hue range so height bands read as clearly distinct on the dark scene.
+const SURFACE_STOPS: [number, THREE.Color][] = [
+  [0.0, new THREE.Color("#fff1c2")], // valleys — pale hot yellow-white (glow)
+  [0.22, new THREE.Color("#ffb000")], // amber accent
+  [0.45, new THREE.Color("#f07d12")], // orange
+  [0.7, new THREE.Color("#b83a08")], // burnt red-orange
+  [1.0, new THREE.Color("#3d0f02")], // peaks — deep maroon, near black
+];
+
+// Sample the multi-stop ramp at t∈[0,1], writing into `out` to avoid allocation.
+function rampColor(out: THREE.Color, t: number): THREE.Color {
+  t = THREE.MathUtils.clamp(t, 0, 1);
+  for (let i = 1; i < SURFACE_STOPS.length; i++) {
+    const [t1, c1] = SURFACE_STOPS[i];
+    if (t <= t1) {
+      const [t0, c0] = SURFACE_STOPS[i - 1];
+      return out.copy(c0).lerp(c1, (t - t0) / (t1 - t0));
+    }
+  }
+  return out.copy(SURFACE_STOPS[SURFACE_STOPS.length - 1][1]);
+}
 
 export function createView3D(func: FuncDef, reducedMotion: boolean): View {
   const container = el("div", { class: "gd-scene-3d" });
@@ -103,8 +122,7 @@ export function createView3D(func: FuncDef, reducedMotion: boolean): View {
       0,
       1,
     );
-    if (t < 0.5) tmp.copy(C_LOW).lerp(C_MID, t * 2);
-    else tmp.copy(C_MID).lerp(C_HIGH, (t - 0.5) * 2);
+    rampColor(tmp, t);
     colors[k * 3] = tmp.r;
     colors[k * 3 + 1] = tmp.g;
     colors[k * 3 + 2] = tmp.b;
