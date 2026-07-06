@@ -471,7 +471,45 @@ export function mount(root: HTMLElement): () => void {
   }
 
   // --- layout --------------------------------------------------------------
-  const sceneHolder = el("div", { class: "gd-scene-holder" }, view.el);
+  const explanation = el(
+    "section",
+    { class: "gd-explanation" },
+    el("h3", {}, "What's happening?"),
+    el(
+      "p",
+      {},
+      "Gradient descent minimizes a function by repeatedly stepping in the ",
+      el("strong", {}, "opposite direction of the slope"),
+      ". The ",
+      el("strong", {}, "learning rate"),
+      " sets the step size — too large and it overshoots, then diverges.",
+    ),
+    el(
+      "p",
+      {},
+      "Switch to the ",
+      el("strong", {}, "3D surface"),
+      " and compare optimizers on the ravine: plain GD zig-zags across the steep walls while ",
+      el("strong", {}, "RMSProp"),
+      " and ",
+      el("strong", {}, "Adam"),
+      " adapt their step per-direction and cut straight down the valley. ",
+      el("strong", {}, "Momentum"),
+      " builds speed along the trough.",
+    ),
+    el(
+      "p",
+      { class: "gd-tip" },
+      "Drag to orbit the surface. Type your own function above — use x for a curve, or x and y for a surface.",
+    ),
+  );
+
+  const sceneHolder = el(
+    "div",
+    { class: "gd-scene-holder" },
+    view.el,
+    explanation,
+  );
   const controls = el(
     "aside",
     { class: "gd-controls" },
@@ -511,39 +549,6 @@ export function mount(root: HTMLElement): () => void {
     ),
   );
 
-  const explanation = el(
-    "section",
-    { class: "gd-explanation" },
-    el("h3", {}, "What's happening?"),
-    el(
-      "p",
-      {},
-      "Gradient descent minimizes a function by repeatedly stepping in the ",
-      el("strong", {}, "opposite direction of the slope"),
-      ". The ",
-      el("strong", {}, "learning rate"),
-      " sets the step size — too large and it overshoots, then diverges.",
-    ),
-    el(
-      "p",
-      {},
-      "Switch to the ",
-      el("strong", {}, "3D surface"),
-      " and compare optimizers on the ravine: plain GD zig-zags across the steep walls while ",
-      el("strong", {}, "RMSProp"),
-      " and ",
-      el("strong", {}, "Adam"),
-      " adapt their step per-direction and cut straight down the valley. ",
-      el("strong", {}, "Momentum"),
-      " builds speed along the trough.",
-    ),
-    el(
-      "p",
-      { class: "gd-tip" },
-      "Drag to orbit the surface. Type your own function above — use x for a curve, or x and y for a surface.",
-    ),
-  );
-
   const page = el(
     "div",
     { class: "gd-page" },
@@ -559,7 +564,6 @@ export function mount(root: HTMLElement): () => void {
       ),
     ),
     el("div", { class: "gd-main" }, sceneHolder, controls),
-    explanation,
   );
 
   root.replaceChildren(page);

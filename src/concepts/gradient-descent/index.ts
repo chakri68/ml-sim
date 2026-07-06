@@ -3,6 +3,7 @@
 // so the homepage bundle stays small.
 
 import { el } from "../../lib/dom.ts";
+import { fadeIn } from "../../lib/transition.ts";
 import type { Concept } from "../types.ts";
 
 const reducedMotion = window.matchMedia(
@@ -14,6 +15,7 @@ const reducedMotion = window.matchMedia(
 function mount(root: HTMLElement): () => void {
   let realCleanup: (() => void) | null = null;
   let cancelled = false;
+  let raf = 0;
 
   root.replaceChildren(
     el(
@@ -27,10 +29,25 @@ function mount(root: HTMLElement): () => void {
   import("./engine.ts").then(({ mount: engineMount }) => {
     if (cancelled) return;
     realCleanup = engineMount(root);
+    if (reducedMotion) return;
+    // The engine's first render (Three.js shader compile / buffer upload) runs
+    // in its render-loop's first frame, right after this mount — janking the
+    // main thread just as the page swaps in and swallowing the fade. Hide the
+    // fresh content and start the fade two frames later, past that first render,
+    // so it plays in full instead of snapping to visible.
+    root.style.opacity = "0";
+    raf = requestAnimationFrame(() => {
+      raf = requestAnimationFrame(() => {
+        root.style.opacity = "";
+        if (!cancelled) fadeIn(root);
+      });
+    });
   });
 
   return () => {
     cancelled = true;
+    cancelAnimationFrame(raf);
+    root.style.opacity = ""; // never leave the outlet stuck hidden
     realCleanup?.();
   };
 }

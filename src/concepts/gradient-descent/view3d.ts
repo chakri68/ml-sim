@@ -12,9 +12,10 @@ const H = 4.5; // surface height in scene units
 const SEG = 90; // grid resolution per axis
 const LIFT = 0.12; // how far the marker floats above the surface
 
-const C_LOW = new THREE.Color("#57e6c9");
-const C_MID = new THREE.Color("#7c9cff");
-const C_HIGH = new THREE.Color("#b06bff");
+// amber-phosphor heightmap: glowing amber valleys → dark amber peaks
+const C_LOW = new THREE.Color("#ffb000");
+const C_MID = new THREE.Color("#b3780a");
+const C_HIGH = new THREE.Color("#6b4a10");
 
 export function createView3D(func: FuncDef, reducedMotion: boolean): View {
   const container = el("div", { class: "gd-scene-3d" });
@@ -79,7 +80,7 @@ export function createView3D(func: FuncDef, reducedMotion: boolean): View {
   const key = new THREE.DirectionalLight(0xffffff, 1.4);
   key.position.set(6, 12, 8);
   scene.add(key);
-  const rim = new THREE.DirectionalLight(0x8aa2ff, 0.5);
+  const rim = new THREE.DirectionalLight(0xcc8a00, 0.5);
   rim.position.set(-8, 4, -6);
   scene.add(rim);
 
@@ -125,10 +126,10 @@ export function createView3D(func: FuncDef, reducedMotion: boolean): View {
   const wire = new THREE.Mesh(
     geometry,
     new THREE.MeshBasicMaterial({
-      color: 0xffffff,
+      color: 0xffb000,
       wireframe: true,
       transparent: true,
-      opacity: 0.05,
+      opacity: 0.06,
     }),
   );
   scene.add(wire);
@@ -136,7 +137,7 @@ export function createView3D(func: FuncDef, reducedMotion: boolean): View {
   // --- markers & path -----------------------------------------------------
   const minMarker = new THREE.Mesh(
     new THREE.SphereGeometry(0.16, 16, 16),
-    new THREE.MeshBasicMaterial({ color: 0x57e6c9, wireframe: true }),
+    new THREE.MeshBasicMaterial({ color: 0xffb000, wireframe: true }),
   );
   if (func.minPoint) {
     minMarker.position.copy(scenePoint(func.minPoint));
@@ -146,8 +147,8 @@ export function createView3D(func: FuncDef, reducedMotion: boolean): View {
   const ball = new THREE.Mesh(
     new THREE.SphereGeometry(0.2, 24, 24),
     new THREE.MeshStandardMaterial({
-      color: 0x57e6c9,
-      emissive: 0x2a8f7c,
+      color: 0xffb000,
+      emissive: 0xcc8a00,
       emissiveIntensity: 0.7,
       roughness: 0.3,
     }),
@@ -166,7 +167,7 @@ export function createView3D(func: FuncDef, reducedMotion: boolean): View {
   const trail = new THREE.Line(
     trailGeom,
     new THREE.LineBasicMaterial({
-      color: 0x9db4ff,
+      color: 0xffb000,
       transparent: true,
       opacity: 0.9,
     }),
@@ -216,10 +217,10 @@ export function createView3D(func: FuncDef, reducedMotion: boolean): View {
     const mat = ball.material as THREE.MeshStandardMaterial;
     mat.color.set(
       state.status === "Diverging"
-        ? 0xff6b8b
+        ? 0xff6b6b
         : state.status === "Overshooting"
-          ? 0xff9f6b
-          : 0x57e6c9,
+          ? 0xff6a2b
+          : 0xffb000,
     );
   }
 
