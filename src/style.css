@@ -1065,6 +1065,45 @@ a {
   background: var(--accent-dim);
   border-color: var(--accent-dim);
 }
+.ga-btn--on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.ga-buttons--maze {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.ga-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  font: inherit;
+  font-size: 13px;
+}
+.ga-select:focus {
+  border-color: var(--accent);
+}
+.ga-note {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  margin: 2px 0 0;
+  line-height: 1.45;
+}
+
+/* edit mode */
+.ga-scene--edit {
+  cursor: crosshair;
+}
+.ga-scene--edit .ga-cell {
+  cursor: crosshair;
+}
+.ga-scene--edit .ga-cell:hover {
+  stroke: var(--accent);
+  fill: rgba(255, 176, 0, 0.14);
+}
 
 .ga-toggles {
   display: flex;

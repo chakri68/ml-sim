@@ -5,14 +5,24 @@
 
 import { el, svg } from "../../lib/dom.ts";
 import { createInitialPopulation, createNextGeneration, simulateAgent } from "./ga.ts";
-import { defaultMaze, manhattan } from "./maze.ts";
+import {
+  defaultMaze,
+  isSolvable,
+  isWall,
+  manhattan,
+  randomMaze,
+  withWall,
+} from "./maze.ts";
 import { createView, type ViewState } from "./view.ts";
 import type {
   AgentResult,
+  CrossoverMethod,
   FitnessHistoryPoint,
   GAConfig,
   GenerationStats,
   Genome,
+  Maze,
+  SelectionMethod,
 } from "./types.ts";
 
 const BASE_STEPS_PER_SEC = 14; // gene-advances per second at speed 1
@@ -33,7 +43,7 @@ type StatusSlug =
   | "high-mutation";
 
 export function mount(root: HTMLElement): () => void {
-  const maze = defaultMaze;
+  let maze: Maze = defaultMaze;
 
   const config: GAConfig = {
     populationSize: 80,
@@ -41,6 +51,8 @@ export function mount(root: HTMLElement): () => void {
     mutationRate: 0.03,
     eliteCount: 2,
     tournamentSize: 3,
+    selectionMethod: "tournament",
+    crossoverMethod: "single",
   };
 
   const state = {
@@ -52,6 +64,8 @@ export function mount(root: HTMLElement): () => void {
     maxGeneLen: 0,
     bestIndex: 0,
     running: false,
+    editing: false,
+    solvable: true,
     statusSlug: "idle" as StatusSlug,
     statusText: "Idle",
     bestEver: null as { result: AgentResult; generation: number } | null,
@@ -59,10 +73,42 @@ export function mount(root: HTMLElement): () => void {
     lastStats: null as GenerationStats | null,
   };
 
-  const view = createView(maze, reducedMotion);
+  const view = createView(maze, reducedMotion, { onCellClick: handleCellClick });
   let raf = 0;
   let last = 0;
   let acc = 0;
+
+  // --- maze editing / generation ------------------------------------------
+  function handleCellClick(row: number, col: number) {
+    if (!state.editing) return;
+    if (row === maze.start.row && col === maze.start.col) return;
+    if (row === maze.target.row && col === maze.target.col) return;
+    maze = withWall(maze, row, col, !isWall(maze, row, col));
+    state.solvable = isSolvable(maze);
+    view.setMaze(maze);
+    seed(true); // new maze = fresh problem
+    setEditingStatus();
+  }
+
+  // Swap in a whole new maze (random / default) and start fresh on it.
+  function loadMaze(next: Maze) {
+    if (state.editing) exitEditMode();
+    maze = next;
+    state.solvable = isSolvable(maze);
+    view.setMaze(maze);
+    seed(true);
+  }
+
+  function setEditingStatus() {
+    if (!state.solvable) {
+      state.statusSlug = "high-mutation";
+      state.statusText = "Maze unsolvable";
+    } else {
+      state.statusSlug = "idle";
+      state.statusText = "Editing maze";
+    }
+    draw();
+  }
 
   // --- generation lifecycle ------------------------------------------------
   function simulateGeneration() {
@@ -180,7 +226,7 @@ export function mount(root: HTMLElement): () => void {
   }
 
   function start() {
-    if (state.running) return;
+    if (state.running || state.editing || !state.solvable) return;
     state.running = true;
     if (state.statusSlug === "idle") {
       state.statusSlug = "exploring";
@@ -201,6 +247,7 @@ export function mount(root: HTMLElement): () => void {
   }
 
   function stepGeneration() {
+    if (state.editing || !state.solvable) return;
     stop();
     // fast-forward the current attempt, then breed — lands paused at gen start
     state.geneIndex = state.maxGeneLen;
@@ -410,6 +457,77 @@ export function mount(root: HTMLElement): () => void {
     },
   });
 
+  // selection + crossover method selectors ---------------------------------
+  const SELECTION_NOTES: Record<SelectionMethod, string> = {
+    tournament:
+      "Sample a few agents at random and keep the fittest. Robust and easy to explain.",
+    roulette:
+      "Fitness-proportionate: an agent's slice of the wheel is its fitness. Strong agents dominate fast.",
+    rank:
+      "Weight parents by their rank, not raw fitness — steadier when one agent's score runs away.",
+  };
+  const CROSSOVER_NOTES: Record<CrossoverMethod, string> = {
+    single: "One cut: child is parent A up to the cut, then parent B.",
+    "two-point": "Parent B fills a middle slice; A keeps both ends.",
+    uniform: "Every gene is a coin flip between the two parents. Maximum mixing.",
+  };
+
+  function labelledSelect<T extends string>(
+    label: string,
+    options: Array<{ value: T; label: string }>,
+    initial: T,
+    onChange: (v: T) => void,
+  ) {
+    const sel = el(
+      "select",
+      { class: "ga-select", "aria-label": label },
+      ...options.map((o) => el("option", { value: o.value }, o.label)),
+    ) as HTMLSelectElement;
+    sel.value = initial;
+    const note = el("p", { class: "ga-note" });
+    sel.addEventListener("change", () => onChange(sel.value as T));
+    const field = el(
+      "label",
+      { class: "ga-field" },
+      el("span", { class: "ga-field-head" }, el("span", {}, label)),
+      sel,
+      note,
+    );
+    return { field, note };
+  }
+
+  const selectionCtl = labelledSelect<SelectionMethod>(
+    "Selection method",
+    [
+      { value: "tournament", label: "Tournament" },
+      { value: "roulette", label: "Roulette (fitness)" },
+      { value: "rank", label: "Rank" },
+    ],
+    config.selectionMethod,
+    (v) => {
+      config.selectionMethod = v;
+      selectionCtl.note.textContent = SELECTION_NOTES[v];
+      tournamentSlider.field.style.display =
+        v === "tournament" ? "" : "none";
+    },
+  );
+  selectionCtl.note.textContent = SELECTION_NOTES[config.selectionMethod];
+
+  const crossoverCtl = labelledSelect<CrossoverMethod>(
+    "Crossover method",
+    [
+      { value: "single", label: "Single-point" },
+      { value: "two-point", label: "Two-point" },
+      { value: "uniform", label: "Uniform" },
+    ],
+    config.crossoverMethod,
+    (v) => {
+      config.crossoverMethod = v;
+      crossoverCtl.note.textContent = CROSSOVER_NOTES[v];
+    },
+  );
+  crossoverCtl.note.textContent = CROSSOVER_NOTES[config.crossoverMethod];
+
   // toggles
   const showAgentsToggle = el("input", {
     type: "checkbox",
@@ -439,9 +557,41 @@ export function mount(root: HTMLElement): () => void {
   const stepBtn = btn("Step generation", stepGeneration);
   const resetBtn = btn("Reset", () => seed(true));
   const randomBtn = btn("Randomize", () => seed(false));
+
+  // maze buttons
+  const randomMazeBtn = btn("Random maze", () => loadMaze(randomMaze()));
+  const defaultMazeBtn = btn("Default maze", () => loadMaze(defaultMaze));
+  const editBtn = btn("Edit maze", () => toggleEdit());
+
+  function enterEditMode() {
+    state.editing = true;
+    stop();
+    view.setEditMode(true);
+    editBtn.textContent = "Done editing";
+    editBtn.classList.add("ga-btn--on");
+    setEditingStatus();
+    syncButtons();
+  }
+  function exitEditMode() {
+    state.editing = false;
+    view.setEditMode(false);
+    editBtn.textContent = "Edit maze";
+    editBtn.classList.remove("ga-btn--on");
+    state.statusSlug = state.solvable ? "idle" : "high-mutation";
+    state.statusText = state.solvable ? "Idle" : "Maze unsolvable";
+    draw();
+    syncButtons();
+  }
+  function toggleEdit() {
+    if (state.editing) exitEditMode();
+    else enterEditMode();
+  }
+
   function syncButtons() {
-    startBtn.toggleAttribute("disabled", state.running);
+    const locked = state.editing || !state.solvable;
+    startBtn.toggleAttribute("disabled", state.running || locked);
     pauseBtn.toggleAttribute("disabled", !state.running);
+    stepBtn.toggleAttribute("disabled", locked);
   }
 
   // --- explanation ---------------------------------------------------------
@@ -523,11 +673,20 @@ export function mount(root: HTMLElement): () => void {
       resetBtn,
       randomBtn,
     ),
+    el(
+      "div",
+      { class: "ga-buttons ga-buttons--maze" },
+      randomMazeBtn,
+      defaultMazeBtn,
+      editBtn,
+    ),
     popSlider.field,
     genomeSlider.field,
     mutationSlider.field,
     eliteSlider.field,
+    selectionCtl.field,
     tournamentSlider.field,
+    crossoverCtl.field,
     speedSlider.field,
     el(
       "div",
@@ -607,8 +766,21 @@ function deriveStatus(
 
 function deriveExplanationNote(
   config: GAConfig,
-  state: { bestEver: { result: AgentResult } | null; generation: number },
+  state: {
+    bestEver: { result: AgentResult } | null;
+    generation: number;
+    editing: boolean;
+    solvable: boolean;
+  },
 ): string {
+  if (state.editing) {
+    return state.solvable
+      ? "Editing: click any cell to add or remove a wall. The population restarts on the new maze. Hit “Done editing” to run it."
+      : "This maze has no route from S to T right now — the target is walled off. Clear a wall to reconnect them.";
+  }
+  if (!state.solvable) {
+    return "The current maze is unsolvable: there's no open path from start to target. Edit it or load a different maze.";
+  }
   if (config.mutationRate === 0) {
     return "Mutation is off. The population can only recombine existing moves, so it often gets stuck once everyone looks alike.";
   }

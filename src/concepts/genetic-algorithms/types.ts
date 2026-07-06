@@ -23,12 +23,17 @@ export type AgentResult = {
   fitness: number;
 };
 
+export type SelectionMethod = "tournament" | "roulette" | "rank";
+export type CrossoverMethod = "single" | "two-point" | "uniform";
+
 export type GAConfig = {
   populationSize: number;
   genomeLength: number;
   mutationRate: number;
   eliteCount: number;
   tournamentSize: number;
+  selectionMethod: SelectionMethod;
+  crossoverMethod: CrossoverMethod;
 };
 
 export type Maze = {

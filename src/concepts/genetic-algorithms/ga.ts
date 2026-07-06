@@ -5,11 +5,13 @@
 import { isOpen, manhattan, maxDistance } from "./maze.ts";
 import type {
   AgentResult,
+  CrossoverMethod,
   Direction,
   GAConfig,
   Genome,
   GridPoint,
   Maze,
+  SelectionMethod,
 } from "./types.ts";
 
 const DIRECTIONS: Direction[] = ["UP", "DOWN", "LEFT", "RIGHT"];
@@ -108,9 +110,14 @@ export function evaluateFitness(
   return Math.max(0, distanceScore + targetBonus + speedBonus - wallPenalty);
 }
 
-// Tournament selection: sample k agents, return the fittest. Simple, visual to
-// explain, and robust to tiny/zero fitness values. Falls back to a uniform pick
-// when every agent scored zero (nothing to discriminate on).
+// --- selection -----------------------------------------------------------
+// A Selector is "draw one parent." Roulette and rank need per-generation setup
+// (cumulative weight tables), so selection is built once via makeSelector rather
+// than recomputed for every child.
+export type Selector = () => AgentResult;
+
+// Tournament: sample k agents, keep the fittest. Simple, robust to tiny/zero
+// fitness, and still gives weak agents a chance.
 export function tournamentSelect(
   population: AgentResult[],
   size: number,
@@ -124,11 +131,93 @@ export function tournamentSelect(
   return best ?? population[randomInt(0, population.length)];
 }
 
-// Single-point crossover: child takes parent A up to a cut, parent B after it.
+// Given a cumulative-weight table and its total, pick an index by binary search.
+function pickCumulative(cum: number[], total: number): number {
+  const spin = Math.random() * total;
+  let lo = 0;
+  let hi = cum.length - 1;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (cum[mid] < spin) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo;
+}
+
+// Build the selector for one generation according to the configured method.
+export function makeSelector(
+  population: AgentResult[],
+  config: GAConfig,
+): Selector {
+  const method: SelectionMethod = config.selectionMethod;
+  const n = population.length;
+
+  if (method === "roulette") {
+    // Fitness-proportionate: weight = fitness. Falls back to uniform if every
+    // agent scored zero (nothing to weigh).
+    const cum: number[] = new Array(n);
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      total += Math.max(0, population[i].fitness);
+      cum[i] = total;
+    }
+    if (total <= 0) return () => population[randomInt(0, n)];
+    return () => population[pickCumulative(cum, total)];
+  }
+
+  if (method === "rank") {
+    // Rank-based: sort by fitness, weight by rank (best gets n, worst gets 1).
+    // Immune to fitness scale/outliers — only the ordering matters.
+    const ranked = [...population].sort((a, b) => b.fitness - a.fitness);
+    const cum: number[] = new Array(n);
+    let total = 0;
+    for (let i = 0; i < n; i++) {
+      total += n - i; // rank weight
+      cum[i] = total;
+    }
+    return () => ranked[pickCumulative(cum, total)];
+  }
+
+  // default: tournament
+  return () => tournamentSelect(population, config.tournamentSize);
+}
+
+// --- crossover -----------------------------------------------------------
+// Single-point: child is parent A up to a cut, then parent B.
 export function crossover(parentA: Genome, parentB: Genome): Genome {
   if (parentA.length < 2) return parentA.slice();
   const point = randomInt(1, parentA.length);
   return [...parentA.slice(0, point), ...parentB.slice(point)];
+}
+
+// Two-point: parent B fills the middle segment, parent A the ends. Keeps useful
+// runs from both parents that single-point would split.
+export function twoPointCrossover(parentA: Genome, parentB: Genome): Genome {
+  if (parentA.length < 3) return crossover(parentA, parentB);
+  let a = randomInt(1, parentA.length);
+  let b = randomInt(1, parentA.length);
+  if (a > b) [a, b] = [b, a];
+  return [
+    ...parentA.slice(0, a),
+    ...parentB.slice(a, b),
+    ...parentA.slice(b),
+  ];
+}
+
+// Uniform: each gene is copied from either parent by a coin flip. Maximum mixing.
+export function uniformCrossover(parentA: Genome, parentB: Genome): Genome {
+  return parentA.map((gene, i) => (Math.random() < 0.5 ? gene : parentB[i]));
+}
+
+// Dispatch to the configured crossover operator.
+export function combine(
+  parentA: Genome,
+  parentB: Genome,
+  method: CrossoverMethod,
+): Genome {
+  if (method === "two-point") return twoPointCrossover(parentA, parentB);
+  if (method === "uniform") return uniformCrossover(parentA, parentB);
+  return crossover(parentA, parentB);
 }
 
 // Each gene has `mutationRate` chance of being replaced with a random direction.
@@ -159,11 +248,12 @@ export function createNextGeneration(params: {
   for (let i = 0; i < eliteCount && i < sorted.length; i++) {
     next.push(sorted[i].genome.slice());
   }
+  const selectParent = makeSelector(population, config);
   while (next.length < config.populationSize) {
-    const parentA = tournamentSelect(population, config.tournamentSize);
-    const parentB = tournamentSelect(population, config.tournamentSize);
+    const parentA = selectParent();
+    const parentB = selectParent();
     const child = mutate(
-      crossover(parentA.genome, parentB.genome),
+      combine(parentA.genome, parentB.genome, config.crossoverMethod),
       config.mutationRate,
     );
     next.push(child);
