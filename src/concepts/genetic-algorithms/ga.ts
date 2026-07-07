@@ -197,11 +197,7 @@ export function twoPointCrossover(parentA: Genome, parentB: Genome): Genome {
   let a = randomInt(1, parentA.length);
   let b = randomInt(1, parentA.length);
   if (a > b) [a, b] = [b, a];
-  return [
-    ...parentA.slice(0, a),
-    ...parentB.slice(a, b),
-    ...parentA.slice(b),
-  ];
+  return [...parentA.slice(0, a), ...parentB.slice(a, b), ...parentA.slice(b)];
 }
 
 // Uniform: each gene is copied from either parent by a coin flip. Maximum mixing.

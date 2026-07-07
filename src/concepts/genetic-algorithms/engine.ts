@@ -4,7 +4,11 @@
 // file only drives it and renders. Loaded lazily by index.ts.
 
 import { el, svg } from "../../lib/dom.ts";
-import { createInitialPopulation, createNextGeneration, simulateAgent } from "./ga.ts";
+import {
+  createInitialPopulation,
+  createNextGeneration,
+  simulateAgent,
+} from "./ga.ts";
 import {
   defaultMaze,
   isSolvable,
@@ -74,7 +78,9 @@ export function mount(root: HTMLElement): () => void {
     lastStats: null as GenerationStats | null,
   };
 
-  const view = createView(maze, reducedMotion, { onCellClick: handleCellClick });
+  const view = createView(maze, reducedMotion, {
+    onCellClick: handleCellClick,
+  });
   let raf = 0;
   let last = 0;
   let acc = 0;
@@ -340,11 +346,21 @@ export function mount(root: HTMLElement): () => void {
       GRAPH_H - GRAPH_PAD - (f / maxFit) * (GRAPH_H - GRAPH_PAD * 2);
     graphBest.setAttribute(
       "points",
-      h.map((p) => `${px(p.generation).toFixed(1)},${py(p.bestFitness).toFixed(1)}`).join(" "),
+      h
+        .map(
+          (p) =>
+            `${px(p.generation).toFixed(1)},${py(p.bestFitness).toFixed(1)}`,
+        )
+        .join(" "),
     );
     graphAvg.setAttribute(
       "points",
-      h.map((p) => `${px(p.generation).toFixed(1)},${py(p.averageFitness).toFixed(1)}`).join(" "),
+      h
+        .map(
+          (p) =>
+            `${px(p.generation).toFixed(1)},${py(p.averageFitness).toFixed(1)}`,
+        )
+        .join(" "),
     );
   }
 
@@ -358,7 +374,11 @@ export function mount(root: HTMLElement): () => void {
     format: (v: number) => string;
     onInput: (v: number) => void;
   }) {
-    const valueEl = el("span", { class: "ga-slider-value" }, opts.format(opts.value));
+    const valueEl = el(
+      "span",
+      { class: "ga-slider-value" },
+      opts.format(opts.value),
+    );
     const input = el("input", {
       type: "range",
       min: String(opts.min),
@@ -376,7 +396,12 @@ export function mount(root: HTMLElement): () => void {
     const field = el(
       "label",
       { class: "ga-field" },
-      el("span", { class: "ga-field-head" }, el("span", {}, opts.label), valueEl),
+      el(
+        "span",
+        { class: "ga-field-head" },
+        el("span", {}, opts.label),
+        valueEl,
+      ),
       input,
     );
     return {
@@ -464,13 +489,13 @@ export function mount(root: HTMLElement): () => void {
       "Sample a few agents at random and keep the fittest. Robust and easy to explain.",
     roulette:
       "Fitness-proportionate: an agent's slice of the wheel is its fitness. Strong agents dominate fast.",
-    rank:
-      "Weight parents by their rank, not raw fitness — steadier when one agent's score runs away.",
+    rank: "Weight parents by their rank, not raw fitness — steadier when one agent's score runs away.",
   };
   const CROSSOVER_NOTES: Record<CrossoverMethod, string> = {
     single: "One cut: child is parent A up to the cut, then parent B.",
     "two-point": "Parent B fills a middle slice; A keeps both ends.",
-    uniform: "Every gene is a coin flip between the two parents. Maximum mixing.",
+    uniform:
+      "Every gene is a coin flip between the two parents. Maximum mixing.",
   };
 
   function labelledSelect<T extends string>(
@@ -508,8 +533,7 @@ export function mount(root: HTMLElement): () => void {
     (v) => {
       config.selectionMethod = v;
       selectionCtl.note.textContent = SELECTION_NOTES[v];
-      tournamentSlider.field.style.display =
-        v === "tournament" ? "" : "none";
+      tournamentSlider.field.style.display = v === "tournament" ? "" : "none";
     },
   );
   selectionCtl.note.textContent = SELECTION_NOTES[config.selectionMethod];
@@ -550,7 +574,11 @@ export function mount(root: HTMLElement): () => void {
   const btn = (label: string, onClick: () => void, primary = false) =>
     el(
       "button",
-      { type: "button", class: primary ? "ga-btn ga-btn--primary" : "ga-btn", onClick },
+      {
+        type: "button",
+        class: primary ? "ga-btn ga-btn--primary" : "ga-btn",
+        onClick,
+      },
       label,
     );
   const startBtn = btn("Start", start, true);
@@ -692,8 +720,18 @@ export function mount(root: HTMLElement): () => void {
     el(
       "div",
       { class: "ga-toggles" },
-      el("label", { class: "ga-toggle" }, showAgentsToggle, el("span", {}, "Show all agents")),
-      el("label", { class: "ga-toggle" }, showBestToggle, el("span", {}, "Show best path")),
+      el(
+        "label",
+        { class: "ga-toggle" },
+        showAgentsToggle,
+        el("span", {}, "Show all agents"),
+      ),
+      el(
+        "label",
+        { class: "ga-toggle" },
+        showBestToggle,
+        el("span", {}, "Show best path"),
+      ),
     ),
     el(
       "div",

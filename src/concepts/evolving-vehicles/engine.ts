@@ -10,7 +10,7 @@ import { el, svg } from "../../lib/dom.ts";
 import { createTabPanel } from "../../lib/tabs.ts";
 import { createInitialPopulation, GENES } from "./genome.ts";
 import { createNextGeneration, pickBest } from "./evolution.ts";
-import { evaluatePopulation } from "./evaluate.ts";
+import type { EvalRequest, EvalResponse } from "./eval.worker.ts";
 import { createVehicleView } from "./view.ts";
 import { createPopulationSim, type PopulationSim } from "./physics.ts";
 import { defaultTerrain, findTerrain, terrains } from "./terrain.ts";
@@ -27,7 +27,8 @@ import type {
 const MAX_HISTORY = 400;
 const CHAMPION_DISTANCE = 45;
 
-type StatusSlug = "idle" | "chaos" | "improving" | "stuck" | "champion" | "high-mutation";
+type StatusSlug =
+  "idle" | "chaos" | "improving" | "stuck" | "champion" | "high-mutation";
 type Pt = { x: number; y: number };
 type InspectMode = "current" | "best";
 
@@ -60,7 +61,7 @@ export function mount(root: HTMLElement): () => void {
     stepOnce: false, // stop after the current race
     isReplay: false, // racing a single best-ever car, don't score/breed
     paused: false,
-    pendingGens: 0, // headless fast-forward queue
+    fastForwarding: false, // headless fast-forward running in the worker
     replaySpeed: 2,
     showGhost: true,
     inspectMode: "current" as InspectMode,
@@ -75,11 +76,46 @@ export function mount(root: HTMLElement): () => void {
   let ghostTrail: Pt[] = [];
   let raf = 0;
 
+  // Headless evaluation runs in a worker so fast-forward never blocks the main
+  // thread. Each request carries an id; the matching resolver is looked up when
+  // the result comes back. `ffToken` invalidates an in-flight fast-forward when
+  // the user resets or changes terrain mid-run.
+  const evalWorker = new Worker(new URL("./eval.worker.ts", import.meta.url), {
+    type: "module",
+  });
+  const evalPending = new Map<
+    number,
+    (results: VehicleEvaluationResult[]) => void
+  >();
+  let evalSeq = 0;
+  let ffToken = 0;
+  evalWorker.onmessage = (e: MessageEvent<EvalResponse>) => {
+    const resolve = evalPending.get(e.data.id);
+    if (resolve) {
+      evalPending.delete(e.data.id);
+      resolve(e.data.results);
+    }
+  };
+  function evaluateInWorker(
+    genomes: VehicleGenome[],
+  ): Promise<VehicleEvaluationResult[]> {
+    if (genomes.length === 0) return Promise.resolve([]);
+    return new Promise((resolve) => {
+      const id = ++evalSeq;
+      evalPending.set(id, resolve);
+      const req: EvalRequest = { id, genomes, terrain, config };
+      evalWorker.postMessage(req);
+    });
+  }
+
   const busy = () =>
-    (state.racing && !state.paused) || state.pendingGens > 0 || state.isReplay;
+    (state.racing && !state.paused) || state.fastForwarding || state.isReplay;
 
   // ------------------------------------------------------------- generations
-  function snapshot(r: VehicleEvaluationResult, generation: number): ChampionSnapshot {
+  function snapshot(
+    r: VehicleEvaluationResult,
+    generation: number,
+  ): ChampionSnapshot {
     return {
       generation,
       genome: r.genome,
@@ -118,14 +154,6 @@ export function mount(root: HTMLElement): () => void {
     state.population = next.population;
     state.cached = next.cached;
     state.results = null;
-  }
-
-  // headless one-generation advance, used by fast-forward
-  function advanceHeadless() {
-    if (state.results) breedNext();
-    const results = evaluatePopulation(state.population, terrain, config, state.cached);
-    state.cached = [];
-    scoreGeneration(results);
   }
 
   function buildSim() {
@@ -207,22 +235,16 @@ export function mount(root: HTMLElement): () => void {
   }
 
   function frame() {
-    if (state.pendingGens > 0) {
-      advanceHeadless();
-      state.pendingGens -= 1;
-      if (state.pendingGens === 0) {
-        breedNext();
-        buildSim();
-        syncButtons();
-      }
-    } else if (state.racing && !state.paused && state.sim) {
+    if (state.racing && !state.paused && state.sim) {
       const steps = Math.max(1, Math.round(state.replaySpeed));
       for (let i = 0; i < steps; i++) {
         state.sim.step();
-        if (state.sim.time >= config.evaluationSeconds || state.sim.allDone()) break;
+        if (state.sim.time >= config.evaluationSeconds || state.sim.allDone())
+          break;
       }
       renderRace();
-      if (state.sim.time >= config.evaluationSeconds || state.sim.allDone()) finishRace();
+      if (state.sim.time >= config.evaluationSeconds || state.sim.allDone())
+        finishRace();
     }
     raf = requestAnimationFrame(frame);
   }
@@ -249,11 +271,39 @@ export function mount(root: HTMLElement): () => void {
     state.paused = false;
     syncButtons();
   }
-  function fastForward(n: number) {
+  // Fast-forward N generations with all physics evaluated in the worker. The
+  // main thread only breeds (cheap) and paints stats between awaits, so the UI
+  // stays responsive. Carried elites reuse their cached result and are never
+  // re-sent. Result order doesn't matter — scoring and selection are order-
+  // agnostic — so cached and freshly-evaluated results just concatenate.
+  async function fastForward(n: number) {
     if (busy()) return;
-    state.pendingGens = n;
+    const token = ++ffToken;
+    state.fastForwarding = true;
     state.racing = false;
     state.paused = false;
+    syncButtons();
+
+    for (let i = 0; i < n; i++) {
+      if (token !== ffToken) return; // reset/terrain-change superseded us
+      if (state.results) breedNext();
+      const freshGenomes: VehicleGenome[] = [];
+      const cachedResults: VehicleEvaluationResult[] = [];
+      for (let j = 0; j < state.population.length; j++) {
+        const c = state.cached[j];
+        if (c) cachedResults.push(c);
+        else freshGenomes.push(state.population[j]);
+      }
+      const freshResults = await evaluateInWorker(freshGenomes);
+      if (token !== ffToken) return; // cancelled while the worker was crunching
+      state.cached = [];
+      scoreGeneration([...cachedResults, ...freshResults]);
+    }
+
+    if (token !== ffToken) return;
+    state.fastForwarding = false;
+    breedNext();
+    buildSim();
     syncButtons();
   }
   function resetAll() {
@@ -262,7 +312,8 @@ export function mount(root: HTMLElement): () => void {
     state.stepOnce = false;
     state.isReplay = false;
     state.paused = false;
-    state.pendingGens = 0;
+    state.fastForwarding = false;
+    ffToken++; // abandon any fast-forward the worker is mid-way through
     seed(true);
     syncButtons();
   }
@@ -321,16 +372,24 @@ export function mount(root: HTMLElement): () => void {
   const bestSpeedStat = stat("best speed");
   const liveDistStat = stat("live distance");
   const terrainStat = stat("terrain");
-  const statusBadge = el("span", { class: "ev-status", "data-status": "idle" }, "Idle");
+  const statusBadge = el(
+    "span",
+    { class: "ev-status", "data-status": "idle" },
+    "Idle",
+  );
 
   function refreshStats() {
     genStat.value.textContent = String(state.generation);
-    bestFitStat.value.textContent = state.bestEver ? state.bestEver.fitness.toFixed(1) : "—";
+    bestFitStat.value.textContent = state.bestEver
+      ? state.bestEver.fitness.toFixed(1)
+      : "—";
     const avg = state.history.length
       ? state.history[state.history.length - 1].averageFitness
       : null;
     avgFitStat.value.textContent = avg != null ? avg.toFixed(1) : "—";
-    bestDistStat.value.textContent = state.bestEver ? `${state.bestEver.maxX.toFixed(1)} m` : "—";
+    bestDistStat.value.textContent = state.bestEver
+      ? `${state.bestEver.maxX.toFixed(1)} m`
+      : "—";
     bestSpeedStat.value.textContent = state.bestEver
       ? `${state.bestEver.averageVelocityX.toFixed(2)} m/s`
       : "—";
@@ -342,8 +401,16 @@ export function mount(root: HTMLElement): () => void {
 
   // ------------------------------------------------------------- inspector
   const inspectorRows = new Map<GeneKey, HTMLElement>();
-  const currentBtn = el("button", { type: "button", class: "ev-seg ev-seg--on" }, "Current gen");
-  const bestBtn = el("button", { type: "button", class: "ev-seg" }, "Best ever");
+  const currentBtn = el(
+    "button",
+    { type: "button", class: "ev-seg ev-seg--on" },
+    "Current gen",
+  );
+  const bestBtn = el(
+    "button",
+    { type: "button", class: "ev-seg" },
+    "Best ever",
+  );
   currentBtn.addEventListener("click", () => setInspectMode("current"));
   bestBtn.addEventListener("click", () => setInspectMode("best"));
   const inspectorSourceNote = el("p", { class: "ev-note" });
@@ -352,7 +419,11 @@ export function mount(root: HTMLElement): () => void {
     { class: "ev-inspector" },
     el(
       "div",
-      { class: "ev-seg-group", role: "group", "aria-label": "Which genome to inspect" },
+      {
+        class: "ev-seg-group",
+        role: "group",
+        "aria-label": "Which genome to inspect",
+      },
       currentBtn,
       bestBtn,
     ),
@@ -408,7 +479,9 @@ export function mount(root: HTMLElement): () => void {
         continue;
       }
       const v = g[spec.key];
-      row.textContent = spec.unit ? `${v.toFixed(2)} ${spec.unit}` : v.toFixed(2);
+      row.textContent = spec.unit
+        ? `${v.toFixed(2)} ${spec.unit}`
+        : v.toFixed(2);
     }
   }
 
@@ -427,7 +500,13 @@ export function mount(root: HTMLElement): () => void {
       role: "img",
       "aria-label": "Best and average fitness per generation",
     },
-    svg("line", { x1: GP, y1: GH - GP, x2: GW - GP, y2: GH - GP, class: "ev-graph-axis" }),
+    svg("line", {
+      x1: GP,
+      y1: GH - GP,
+      x2: GW - GP,
+      y2: GH - GP,
+      class: "ev-graph-axis",
+    }),
     graphAvg,
     graphBest,
   );
@@ -443,9 +522,26 @@ export function mount(root: HTMLElement): () => void {
     const gMin = h[0].generation;
     const span = Math.max(1, h[h.length - 1].generation - gMin);
     const px = (g: number) => GP + ((g - gMin) / span) * (GW - GP * 2);
-    const py = (f: number) => GH - GP - ((f - minF) / (maxF - minF || 1)) * (GH - GP * 2);
-    graphBest.setAttribute("points", h.map((p) => `${px(p.generation).toFixed(1)},${py(p.bestFitness).toFixed(1)}`).join(" "));
-    graphAvg.setAttribute("points", h.map((p) => `${px(p.generation).toFixed(1)},${py(p.averageFitness).toFixed(1)}`).join(" "));
+    const py = (f: number) =>
+      GH - GP - ((f - minF) / (maxF - minF || 1)) * (GH - GP * 2);
+    graphBest.setAttribute(
+      "points",
+      h
+        .map(
+          (p) =>
+            `${px(p.generation).toFixed(1)},${py(p.bestFitness).toFixed(1)}`,
+        )
+        .join(" "),
+    );
+    graphAvg.setAttribute(
+      "points",
+      h
+        .map(
+          (p) =>
+            `${px(p.generation).toFixed(1)},${py(p.averageFitness).toFixed(1)}`,
+        )
+        .join(" "),
+    );
   }
 
   // ------------------------------------------------------------- controls
@@ -458,7 +554,11 @@ export function mount(root: HTMLElement): () => void {
     format: (v: number) => string;
     onInput: (v: number) => void;
   }) {
-    const valueEl = el("span", { class: "ev-slider-value" }, opts.format(opts.value));
+    const valueEl = el(
+      "span",
+      { class: "ev-slider-value" },
+      opts.format(opts.value),
+    );
     const input = el("input", {
       type: "range",
       min: String(opts.min),
@@ -476,14 +576,27 @@ export function mount(root: HTMLElement): () => void {
     const field = el(
       "label",
       { class: "ev-field" },
-      el("span", { class: "ev-field-head" }, el("span", {}, opts.label), valueEl),
+      el(
+        "span",
+        { class: "ev-field-head" },
+        el("span", {}, opts.label),
+        valueEl,
+      ),
       input,
     );
     return { field };
   }
 
   const btn = (label: string, onClick: () => void, primary = false) =>
-    el("button", { type: "button", class: primary ? "ev-btn ev-btn--primary" : "ev-btn", onClick }, label);
+    el(
+      "button",
+      {
+        type: "button",
+        class: primary ? "ev-btn ev-btn--primary" : "ev-btn",
+        onClick,
+      },
+      label,
+    );
   const startBtn = btn("Start evolution", startEvolution, true);
   const pauseBtn = btn("Pause", pauseEvolution);
   const stepBtn = btn("Step gen", stepGeneration);
@@ -505,7 +618,9 @@ export function mount(root: HTMLElement): () => void {
     ...terrains.map((t) => el("option", { value: t.id }, t.label)),
   ) as HTMLSelectElement;
   terrainSelect.value = terrain.id;
-  terrainSelect.addEventListener("change", () => changeTerrain(terrainSelect.value));
+  terrainSelect.addEventListener("change", () =>
+    changeTerrain(terrainSelect.value),
+  );
 
   const ghostToggle = el("input", {
     type: "checkbox",
@@ -526,7 +641,16 @@ export function mount(root: HTMLElement): () => void {
       el("span", { class: "ev-controls-title" }, "Status"),
       statusBadge,
     ),
-    el("div", { class: "ev-buttons" }, startBtn, pauseBtn, stepBtn, ffBtn, resetBtn, replayBestBtn),
+    el(
+      "div",
+      { class: "ev-buttons" },
+      startBtn,
+      pauseBtn,
+      stepBtn,
+      ffBtn,
+      resetBtn,
+      replayBestBtn,
+    ),
     field("Terrain", terrainSelect),
     slider({
       label: "Population size",
@@ -608,7 +732,12 @@ export function mount(root: HTMLElement): () => void {
         state.replaySpeed = v;
       },
     }).field,
-    el("label", { class: "ev-toggle" }, ghostToggle, el("span", {}, "Show previous-champion ghost")),
+    el(
+      "label",
+      { class: "ev-toggle" },
+      ghostToggle,
+      el("span", {}, "Show previous-champion ghost"),
+    ),
   );
 
   const statsTab = el(
@@ -729,6 +858,9 @@ export function mount(root: HTMLElement): () => void {
 
   return () => {
     if (raf) cancelAnimationFrame(raf);
+    ffToken++; // stop any pending fast-forward from touching torn-down state
+    evalWorker.terminate();
+    evalPending.clear();
     state.sim?.destroy();
     view.dispose();
     document.body.classList.remove("concept-open");

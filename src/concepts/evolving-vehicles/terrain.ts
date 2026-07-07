@@ -9,7 +9,11 @@ const LENGTH = 140; // metres
 const STEP = 1; // sample spacing
 const FLAT_RUNUP = 8; // metres of flat ground at the start
 
-function build(id: string, label: string, height: (x: number) => number): Terrain {
+function build(
+  id: string,
+  label: string,
+  height: (x: number) => number,
+): Terrain {
   const points: TerrainPoint[] = [];
   for (let x = -6; x <= LENGTH; x += STEP) {
     const y = x <= FLAT_RUNUP ? 0 : height(x);

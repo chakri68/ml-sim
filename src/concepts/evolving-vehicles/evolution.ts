@@ -37,7 +37,8 @@ export function uniformCrossover(
   b: VehicleGenome,
 ): VehicleGenome {
   const child = {} as VehicleGenome;
-  for (const g of GENES) child[g.key] = Math.random() < 0.5 ? a[g.key] : b[g.key];
+  for (const g of GENES)
+    child[g.key] = Math.random() < 0.5 ? a[g.key] : b[g.key];
   return child;
 }
 

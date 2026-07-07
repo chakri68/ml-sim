@@ -52,14 +52,21 @@ export const evolvingVehicles: Concept = {
   description:
     "An advanced genetic algorithm where genomes encode 2D vehicle bodies. A population of cars is dropped onto terrain and scored on how far they travel; selection, crossover, and mutation evolve better designs over generations, in a real physics simulation.",
   difficulty: "advanced",
-  tags: ["evolution", "physics", "optimization", "simulation", "genetic algorithms"],
+  tags: [
+    "evolution",
+    "physics",
+    "optimization",
+    "simulation",
+    "genetic algorithms",
+  ],
   route: "evolving-vehicles",
   mount,
   preview(root) {
     // A little cart bobbing over hills — hints at "vehicle crossing terrain"
     // without running physics.
     const NS = "http://www.w3.org/2000/svg";
-    const hill = (x: number) => 30 + Math.sin(x * 0.16) * 5 + Math.sin(x * 0.4) * 2;
+    const hill = (x: number) =>
+      30 + Math.sin(x * 0.16) * 5 + Math.sin(x * 0.4) * 2;
     const pts: string[] = [];
     for (let x = 0; x <= 60; x += 2) pts.push(`${x},${hill(x).toFixed(1)}`);
     const ground = document.createElementNS(NS, "polyline");

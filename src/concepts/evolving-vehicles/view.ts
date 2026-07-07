@@ -41,10 +41,17 @@ export function createVehicleView(): VehicleView {
     class: "ev-scene",
     preserveAspectRatio: "xMidYMid meet",
     role: "img",
-    "aria-label": "Physics viewport: a population of vehicles driving across terrain",
+    "aria-label":
+      "Physics viewport: a population of vehicles driving across terrain",
   });
 
-  const sky = svg("rect", { x: 0, y: 0, width: VW, height: VH, class: "ev-sky" });
+  const sky = svg("rect", {
+    x: 0,
+    y: 0,
+    width: VW,
+    height: VH,
+    class: "ev-sky",
+  });
   const groundFill = svg("path", { class: "ev-ground" });
   const groundLine = svg("polyline", { class: "ev-ground-line" });
   const markers = svg("g", { class: "ev-markers" });
@@ -53,7 +60,16 @@ export function createVehicleView(): VehicleView {
   const trailPath = svg("polyline", { class: "ev-trail" });
   const fleet = svg("g", { class: "ev-fleet" });
 
-  root.append(sky, groundFill, groundLine, markers, startLine, ghostPath, trailPath, fleet);
+  root.append(
+    sky,
+    groundFill,
+    groundLine,
+    markers,
+    startLine,
+    ghostPath,
+    trailPath,
+    fleet,
+  );
 
   let terrain: Terrain | null = null;
   let cameraX = 0;
@@ -64,9 +80,23 @@ export function createVehicleView(): VehicleView {
 
   function makeGfx(): VehicleGfx {
     const chassis = svg("polygon", { class: "ev-chassis" });
-    const front = { tyre: svg("circle", { class: "ev-wheel" }), spoke: svg("line", { class: "ev-spoke" }) };
-    const rear = { tyre: svg("circle", { class: "ev-wheel" }), spoke: svg("line", { class: "ev-spoke" }) };
-    const g = svg("g", {}, rear.tyre, rear.spoke, front.tyre, front.spoke, chassis);
+    const front = {
+      tyre: svg("circle", { class: "ev-wheel" }),
+      spoke: svg("line", { class: "ev-spoke" }),
+    };
+    const rear = {
+      tyre: svg("circle", { class: "ev-wheel" }),
+      spoke: svg("line", { class: "ev-spoke" }),
+    };
+    const g = svg(
+      "g",
+      {},
+      rear.tyre,
+      rear.spoke,
+      front.tyre,
+      front.spoke,
+      chassis,
+    );
     fleet.append(g);
     return { g, chassis, front, rear };
   }
@@ -102,7 +132,9 @@ export function createVehicleView(): VehicleView {
       markers.replaceChildren();
       return;
     }
-    const line = visible.map((p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`);
+    const line = visible.map(
+      (p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`,
+    );
     groundLine.setAttribute("points", line.join(" "));
     const first = visible[0];
     const last = visible[visible.length - 1];
@@ -116,8 +148,23 @@ export function createVehicleView(): VehicleView {
     for (let mx = startM; mx <= rightW; mx += 5) {
       const gy = groundYAt(mx);
       marks.push(
-        svg("line", { x1: sx(mx), y1: sy(gy), x2: sx(mx), y2: sy(gy) - 12, class: "ev-marker-tick" }),
-        svg("text", { x: sx(mx), y: sy(gy) - 16, class: "ev-marker-label", "text-anchor": "middle" }, `${mx}m`),
+        svg("line", {
+          x1: sx(mx),
+          y1: sy(gy),
+          x2: sx(mx),
+          y2: sy(gy) - 12,
+          class: "ev-marker-tick",
+        }),
+        svg(
+          "text",
+          {
+            x: sx(mx),
+            y: sy(gy) - 16,
+            class: "ev-marker-label",
+            "text-anchor": "middle",
+          },
+          `${mx}m`,
+        ),
       );
     }
     markers.replaceChildren(...marks);
@@ -138,7 +185,10 @@ export function createVehicleView(): VehicleView {
       el.setAttribute("points", "");
       return;
     }
-    el.setAttribute("points", pts.map((p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join(" "));
+    el.setAttribute(
+      "points",
+      pts.map((p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join(" "),
+    );
   }
 
   function drawVehicle(gfx: VehicleGfx, item: PopulationRenderItem) {
@@ -149,7 +199,10 @@ export function createVehicleView(): VehicleView {
     gfx.chassis.setAttribute(
       "points",
       v.chassisVerts
-        .map((lv) => `${sx(x + lv.x * cos - lv.y * sin).toFixed(1)},${sy(y + lv.x * sin + lv.y * cos).toFixed(1)}`)
+        .map(
+          (lv) =>
+            `${sx(x + lv.x * cos - lv.y * sin).toFixed(1)},${sy(y + lv.x * sin + lv.y * cos).toFixed(1)}`,
+        )
         .join(" "),
     );
     for (const [w, wheel] of [
@@ -190,7 +243,11 @@ export function createVehicleView(): VehicleView {
     // draw the leader last so it sits on top
     const order = params.vehicles
       .map((_, i) => i)
-      .sort((a, b) => Number(params.vehicles[a].isLeader) - Number(params.vehicles[b].isLeader));
+      .sort(
+        (a, b) =>
+          Number(params.vehicles[a].isLeader) -
+          Number(params.vehicles[b].isLeader),
+      );
     let k = 0;
     for (const idx of order) {
       drawVehicle(pool[k], params.vehicles[idx]);

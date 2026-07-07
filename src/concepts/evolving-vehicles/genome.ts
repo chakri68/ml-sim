@@ -20,18 +20,94 @@ export type GeneSpec = {
 // don't overlap, which enforces "front wheel ahead of rear" without a
 // cross-gene constraint.
 export const GENES: GeneSpec[] = [
-  { key: "chassisWidth", group: "Body", label: "Chassis width", min: 1.4, max: 4.6, unit: "m" },
-  { key: "chassisHeight", group: "Body", label: "Chassis height", min: 0.4, max: 1.6, unit: "m" },
-  { key: "chassisFrontScale", group: "Body", label: "Front taper", min: 0.35, max: 1.3 },
-  { key: "chassisRearScale", group: "Body", label: "Rear taper", min: 0.35, max: 1.3 },
-  { key: "frontWheelRadius", group: "Wheels", label: "Front wheel radius", min: 0.25, max: 1.1, unit: "m" },
-  { key: "rearWheelRadius", group: "Wheels", label: "Rear wheel radius", min: 0.25, max: 1.1, unit: "m" },
-  { key: "frontWheelX", group: "Wheels", label: "Front wheel pos", min: 0.12, max: 0.5 },
-  { key: "rearWheelX", group: "Wheels", label: "Rear wheel pos", min: -0.5, max: -0.12 },
-  { key: "frontMotorTorque", group: "Motors", label: "Front motor", min: 0, max: 1 },
-  { key: "rearMotorTorque", group: "Motors", label: "Rear motor", min: 0, max: 1 },
-  { key: "frontSuspension", group: "Suspension", label: "Front suspension", min: 0, max: 1 },
-  { key: "rearSuspension", group: "Suspension", label: "Rear suspension", min: 0, max: 1 },
+  {
+    key: "chassisWidth",
+    group: "Body",
+    label: "Chassis width",
+    min: 1.4,
+    max: 4.6,
+    unit: "m",
+  },
+  {
+    key: "chassisHeight",
+    group: "Body",
+    label: "Chassis height",
+    min: 0.4,
+    max: 1.6,
+    unit: "m",
+  },
+  {
+    key: "chassisFrontScale",
+    group: "Body",
+    label: "Front taper",
+    min: 0.35,
+    max: 1.3,
+  },
+  {
+    key: "chassisRearScale",
+    group: "Body",
+    label: "Rear taper",
+    min: 0.35,
+    max: 1.3,
+  },
+  {
+    key: "frontWheelRadius",
+    group: "Wheels",
+    label: "Front wheel radius",
+    min: 0.25,
+    max: 1.1,
+    unit: "m",
+  },
+  {
+    key: "rearWheelRadius",
+    group: "Wheels",
+    label: "Rear wheel radius",
+    min: 0.25,
+    max: 1.1,
+    unit: "m",
+  },
+  {
+    key: "frontWheelX",
+    group: "Wheels",
+    label: "Front wheel pos",
+    min: 0.12,
+    max: 0.5,
+  },
+  {
+    key: "rearWheelX",
+    group: "Wheels",
+    label: "Rear wheel pos",
+    min: -0.5,
+    max: -0.12,
+  },
+  {
+    key: "frontMotorTorque",
+    group: "Motors",
+    label: "Front motor",
+    min: 0,
+    max: 1,
+  },
+  {
+    key: "rearMotorTorque",
+    group: "Motors",
+    label: "Rear motor",
+    min: 0,
+    max: 1,
+  },
+  {
+    key: "frontSuspension",
+    group: "Suspension",
+    label: "Front suspension",
+    min: 0,
+    max: 1,
+  },
+  {
+    key: "rearSuspension",
+    group: "Suspension",
+    label: "Rear suspension",
+    min: 0,
+    max: 1,
+  },
 ];
 
 const GENE_BY_KEY: Record<GeneKey, GeneSpec> = Object.fromEntries(
@@ -50,7 +126,9 @@ export function createRandomGenome(): VehicleGenome {
   return genome;
 }
 
-export function createInitialPopulation(config: EvolutionConfig): VehicleGenome[] {
+export function createInitialPopulation(
+  config: EvolutionConfig,
+): VehicleGenome[] {
   return Array.from({ length: config.populationSize }, createRandomGenome);
 }
 

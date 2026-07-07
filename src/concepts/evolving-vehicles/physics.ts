@@ -33,7 +33,12 @@ const STUCK_ABORT = 2.0;
 // collide with each other — only with the ground (group 0).
 const VEHICLE_GROUP = -1;
 
-export type WheelRenderState = { x: number; y: number; angle: number; radius: number };
+export type WheelRenderState = {
+  x: number;
+  y: number;
+  angle: number;
+  radius: number;
+};
 
 export type VehicleRenderState = {
   chassis: { x: number; y: number; angle: number };
@@ -100,7 +105,9 @@ function buildVehicle(
   const spawnX = 0;
   const spawnY = maxR + hh + 0.4;
 
-  const chassis = world.createDynamicBody({ position: { x: spawnX, y: spawnY } });
+  const chassis = world.createDynamicBody({
+    position: { x: spawnX, y: spawnY },
+  });
   chassis.createFixture({
     shape: new Polygon(verts),
     density: 1.1,
@@ -108,7 +115,12 @@ function buildVehicle(
     filterGroupIndex: groupIndex,
   });
 
-  function makeWheel(radius: number, localX: number, torqueGene: number, susGene: number) {
+  function makeWheel(
+    radius: number,
+    localX: number,
+    torqueGene: number,
+    susGene: number,
+  ) {
     const wx = spawnX + localX * genome.chassisWidth;
     const wy = spawnY - hh - radius * 0.4;
     const wheel = world.createDynamicBody({ position: { x: wx, y: wy } });
@@ -135,8 +147,18 @@ function buildVehicle(
     return { wheel, radius, joint, maxTorque: torqueGene * MOTOR_TORQUE_MAX };
   }
 
-  const front = makeWheel(genome.frontWheelRadius, genome.frontWheelX, genome.frontMotorTorque, genome.frontSuspension);
-  const rear = makeWheel(genome.rearWheelRadius, genome.rearWheelX, genome.rearMotorTorque, genome.rearSuspension);
+  const front = makeWheel(
+    genome.frontWheelRadius,
+    genome.frontWheelX,
+    genome.frontMotorTorque,
+    genome.frontSuspension,
+  );
+  const rear = makeWheel(
+    genome.rearWheelRadius,
+    genome.rearWheelX,
+    genome.rearMotorTorque,
+    genome.rearSuspension,
+  );
 
   const metrics: LiveMetrics = {
     maxX: 0,
@@ -171,7 +193,8 @@ function buildVehicle(
       const pos = chassis.getPosition();
       const x = pos.x - spawnX;
       metrics.finalX = x;
-      if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y) || pos.y < -30) exploded = true;
+      if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y) || pos.y < -30)
+        exploded = true;
 
       if (x > metrics.maxX + 0.02) {
         metrics.maxX = x;
@@ -185,7 +208,8 @@ function buildVehicle(
         }
       }
 
-      if (Math.abs(wrap(chassis.getAngle())) > FLIP_ANGLE) metrics.flipped = true;
+      if (Math.abs(wrap(chassis.getAngle())) > FLIP_ANGLE)
+        metrics.flipped = true;
 
       metrics.motorEnergy +=
         (front.maxTorque * Math.abs(front.wheel.getAngularVelocity()) +
@@ -220,8 +244,18 @@ function buildVehicle(
       return {
         chassis: { x: cp.x, y: cp.y, angle: chassis.getAngle() },
         chassisVerts: localVerts,
-        frontWheel: { x: fp.x, y: fp.y, angle: front.wheel.getAngle(), radius: front.radius },
-        rearWheel: { x: rp.x, y: rp.y, angle: rear.wheel.getAngle(), radius: rear.radius },
+        frontWheel: {
+          x: fp.x,
+          y: fp.y,
+          angle: front.wheel.getAngle(),
+          radius: front.radius,
+        },
+        rearWheel: {
+          x: rp.x,
+          y: rp.y,
+          angle: rear.wheel.getAngle(),
+          radius: rear.radius,
+        },
       };
     },
   };
@@ -255,7 +289,10 @@ export type VehicleSim = {
   destroy(): void;
 };
 
-export function createVehicleSim(genome: VehicleGenome, terrain: Terrain): VehicleSim {
+export function createVehicleSim(
+  genome: VehicleGenome,
+  terrain: Terrain,
+): VehicleSim {
   const world = new World({ gravity: { x: 0, y: -10 } });
   buildGround(world, terrain);
   const inst = buildVehicle(world, genome, 0);
