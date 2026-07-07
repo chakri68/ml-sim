@@ -79,8 +79,4 @@ plus a folder that exports a `mount()` returning its cleanup — no central refa
 no ceremony. That's the whole pitch: a museum designed to grow one curiosity at a
 time.
 
-See [`design.md`](./design.md) if you want the full product-design writeup.
-
 ---
-
-Busy building Rome. This is one of the bricks.
