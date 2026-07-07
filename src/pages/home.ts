@@ -60,7 +60,11 @@ export function renderHome(root: HTMLElement): () => void {
     el(
       "footer",
       { class: "site-footer" },
-      el("span", {}, "Built with Vite + TypeScript + SVG."),
+      el(
+        "span",
+        {},
+        "Inspired by my cousin, who loves this kind of weird little science stuff..",
+      ),
       el(
         "a",
         {

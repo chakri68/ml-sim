@@ -51,7 +51,7 @@ export const evolvingVehicles: Concept = {
   subtitle: "Watch strange machines evolve to cross rough terrain.",
   description:
     "An advanced genetic algorithm where genomes encode 2D vehicle bodies. A population of cars is dropped onto terrain and scored on how far they travel; selection, crossover, and mutation evolve better designs over generations, in a real physics simulation.",
-  difficulty: "advanced",
+  difficulty: "intermediate",
   tags: [
     "evolution",
     "physics",

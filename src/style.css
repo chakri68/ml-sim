@@ -409,7 +409,8 @@ a {
    chrome, keep only the typography from .gd-explanation / .ga-explanation. */
 .side-tab-body .gd-explanation,
 .side-tab-body .ga-explanation,
-.side-tab-body .ev-explanation {
+.side-tab-body .ev-explanation,
+.side-tab-body .ec-explanation {
   margin: 0;
   padding: 0;
   border: 0;
@@ -474,7 +475,8 @@ body.concept-open #outlet {
 }
 /* graph sits flush in the footer — drop its own top border/margin */
 .concept-stage-foot .ga-graph-wrap,
-.concept-stage-foot .ev-graph-wrap {
+.concept-stage-foot .ev-graph-wrap,
+.concept-stage-foot .ec-graph-wrap {
   margin: 0;
   padding: 0;
   border-top: 0;
@@ -1621,6 +1623,393 @@ body.concept-open #outlet {
   font-weight: 600;
 }
 .ev-tip {
+  font-size: 14px;
+  color: var(--accent) !important;
+  margin-bottom: 0 !important;
+}
+
+/* ---------------- Evolving Creatures page ---------------- */
+.ec-scene {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.ec-sky {
+  fill: transparent;
+}
+.ec-ground {
+  fill: rgba(255, 176, 0, 0.05);
+}
+.ec-ground-line {
+  fill: none;
+  stroke: var(--accent-dim);
+  stroke-width: 2;
+}
+.ec-marker-tick {
+  stroke: var(--border-strong);
+  stroke-width: 1;
+}
+.ec-marker-label {
+  fill: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+.ec-startline {
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  opacity: 0.7;
+}
+.ec-ghost {
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 4;
+  opacity: 0.5;
+}
+.ec-trail {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1.5;
+  opacity: 0.4;
+}
+/* the crowd is drawn grey; only the champion is coloured (like ga-agent--best) */
+.ec-body {
+  fill: rgba(120, 120, 120, 0.14);
+  stroke: var(--text-dim);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.ec-limb {
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ec-joint {
+  fill: var(--text-h);
+}
+.ec-com {
+  fill: none;
+  stroke: var(--accent-warn);
+  stroke-width: 2;
+}
+.ec-fleet .ec-creature {
+  opacity: 0.4;
+}
+.ec-creature--done {
+  opacity: 0.16;
+}
+/* the champion pops in accent amber with a glow */
+.ec-creature--leader {
+  opacity: 1;
+}
+.ec-creature--leader .ec-body {
+  fill: rgba(255, 176, 0, 0.18);
+  stroke: var(--accent);
+  filter: drop-shadow(0 0 6px rgba(255, 176, 0, 0.4));
+}
+.ec-creature--leader .ec-limb {
+  stroke: var(--accent);
+}
+.ec-creature--leader .ec-joint {
+  fill: var(--accent);
+}
+
+/* genome inspector segmented toggle */
+.ec-seg-group {
+  display: flex;
+  gap: 6px;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px;
+  margin-bottom: 4px;
+}
+.ec-seg {
+  flex: 1;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-dim);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.ec-seg:hover:not(.ec-seg--on) {
+  color: var(--text);
+}
+.ec-seg--on {
+  background: var(--accent);
+  color: #000;
+}
+.ec-note {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+/* controls (mirror the shared concept control kit) */
+.ec-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ec-controls-title {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+.ec-controls-title::before {
+  content: ">";
+  color: var(--accent);
+  margin-right: 8px;
+}
+.ec-status {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(139, 133, 116, 0.15);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.ec-status[data-status="chaos"],
+.ec-status[data-status="dragging"] {
+  color: var(--text-dim);
+}
+.ec-status[data-status="improving"],
+.ec-status[data-status="crawler"] {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: rgba(255, 176, 0, 0.16);
+}
+.ec-status[data-status="stuck"],
+.ec-status[data-status="spinning"] {
+  color: var(--accent-warn);
+  border-color: rgba(255, 106, 43, 0.5);
+  background: rgba(255, 106, 43, 0.14);
+}
+.ec-status[data-status="high-mutation"] {
+  color: var(--accent-bad);
+  border-color: rgba(255, 107, 107, 0.5);
+  background: rgba(255, 107, 107, 0.16);
+}
+
+.ec-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ec-field-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+.ec-slider-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.ec-slider-input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+.ec-select {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--bg-2);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+  font: inherit;
+  font-size: 13px;
+}
+.ec-select:focus {
+  border-color: var(--accent);
+}
+
+.ec-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.ec-btn {
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition:
+    border-color 0.12s,
+    background 0.12s,
+    opacity 0.12s;
+}
+.ec-btn:hover:not([disabled]) {
+  border-color: var(--accent-dim);
+}
+.ec-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.ec-btn--primary {
+  grid-column: span 2;
+  background: var(--accent);
+  color: #000;
+  border-color: var(--accent);
+  font-weight: 600;
+}
+.ec-btn--primary:hover:not([disabled]) {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}
+
+.ec-overlays {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ec-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text-dim);
+  cursor: pointer;
+}
+.ec-check {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+}
+
+.ec-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ec-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  gap: 12px;
+}
+.ec-stat-label {
+  color: var(--text-dim);
+}
+.ec-stat-value {
+  font-variant-numeric: tabular-nums;
+  color: var(--text-h);
+  font-weight: 500;
+  text-align: right;
+}
+.ec-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ec-inspector-group {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent);
+  margin: 12px 0 2px;
+}
+.ec-inspector-group:first-child {
+  margin-top: 0;
+}
+
+/* fitness graph (flush — lives in the stage footer) */
+.ec-graph-wrap {
+  padding: 0;
+}
+.ec-graph-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.ec-graph-legend {
+  display: flex;
+  gap: 14px;
+}
+.ec-legend {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.ec-legend::before {
+  content: "";
+  width: 12px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+}
+.ec-legend--best {
+  color: var(--accent);
+}
+.ec-legend--avg {
+  color: var(--text-dim);
+}
+.ec-graph {
+  width: 100%;
+  height: 96px;
+  display: block;
+}
+.ec-graph-axis {
+  stroke: var(--border);
+  stroke-width: 1;
+}
+.ec-graph-best {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+.ec-graph-avg {
+  fill: none;
+  stroke: var(--text-dim);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  stroke-linejoin: round;
+}
+
+/* explanation (flush — lives in the Notes tab) */
+.ec-explanation h3 {
+  margin-bottom: 12px;
+}
+.ec-explanation p {
+  color: var(--text-dim);
+  margin: 0 0 12px;
+}
+.ec-explanation strong {
+  color: var(--text);
+  font-weight: 600;
+}
+.ec-tip {
   font-size: 14px;
   color: var(--accent) !important;
   margin-bottom: 0 !important;
