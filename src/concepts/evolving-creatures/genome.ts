@@ -7,11 +7,7 @@ import { clamp } from "../../lib/math.ts";
 import type { CreatureGenome, EvolutionConfig, GeneKey } from "./types.ts";
 
 export type GeneGroup =
-  | "Body"
-  | "Limbs"
-  | "Gait"
-  | "Front Motors"
-  | "Rear Motors";
+  "Body" | "Limbs" | "Gait" | "Front Motors" | "Rear Motors";
 
 export type GeneSpec = {
   key: GeneKey;
@@ -29,27 +25,143 @@ const HALF_PI = Math.PI / 2;
 const TWO_PI = Math.PI * 2;
 
 export const GENES: GeneSpec[] = [
-  { key: "bodyWidth", group: "Body", label: "Body width", min: 1.0, max: 3.0, unit: "m" },
-  { key: "bodyHeight", group: "Body", label: "Body height", min: 0.3, max: 1.0, unit: "m" },
+  {
+    key: "bodyWidth",
+    group: "Body",
+    label: "Body width",
+    min: 1.0,
+    max: 3.0,
+    unit: "m",
+  },
+  {
+    key: "bodyHeight",
+    group: "Body",
+    label: "Body height",
+    min: 0.3,
+    max: 1.0,
+    unit: "m",
+  },
 
-  { key: "limbAttach", group: "Limbs", label: "Limb spread", min: 0.2, max: 0.95 },
-  { key: "upperLen", group: "Limbs", label: "Upper length", min: 0.35, max: 1.4, unit: "m" },
-  { key: "lowerLen", group: "Limbs", label: "Lower length", min: 0.35, max: 1.4, unit: "m" },
-  { key: "thickness", group: "Limbs", label: "Limb thickness", min: 0.1, max: 0.3, unit: "m" },
+  {
+    key: "limbAttach",
+    group: "Limbs",
+    label: "Limb spread",
+    min: 0.2,
+    max: 0.95,
+  },
+  {
+    key: "upperLen",
+    group: "Limbs",
+    label: "Upper length",
+    min: 0.35,
+    max: 1.4,
+    unit: "m",
+  },
+  {
+    key: "lowerLen",
+    group: "Limbs",
+    label: "Lower length",
+    min: 0.35,
+    max: 1.4,
+    unit: "m",
+  },
+  {
+    key: "thickness",
+    group: "Limbs",
+    label: "Limb thickness",
+    min: 0.1,
+    max: 0.3,
+    unit: "m",
+  },
 
-  { key: "gaitFrequency", group: "Gait", label: "Gait tempo", min: 1.5, max: 7.0, unit: "rad/s" },
+  {
+    key: "gaitFrequency",
+    group: "Gait",
+    label: "Gait tempo",
+    min: 1.5,
+    max: 7.0,
+    unit: "rad/s",
+  },
 
-  { key: "frontShoulderAmp", group: "Front Motors", label: "Shoulder swing", min: 0, max: HALF_PI, display: "pi" },
-  { key: "frontShoulderPhase", group: "Front Motors", label: "Shoulder phase", min: 0, max: TWO_PI, display: "pi" },
-  { key: "frontKneeAmp", group: "Front Motors", label: "Knee swing", min: 0, max: HALF_PI, display: "pi" },
-  { key: "frontKneePhase", group: "Front Motors", label: "Knee phase", min: 0, max: TWO_PI, display: "pi" },
-  { key: "frontTorque", group: "Front Motors", label: "Muscle strength", min: 0.2, max: 1.0 },
+  {
+    key: "frontShoulderAmp",
+    group: "Front Motors",
+    label: "Shoulder swing",
+    min: 0,
+    max: HALF_PI,
+    display: "pi",
+  },
+  {
+    key: "frontShoulderPhase",
+    group: "Front Motors",
+    label: "Shoulder phase",
+    min: 0,
+    max: TWO_PI,
+    display: "pi",
+  },
+  {
+    key: "frontKneeAmp",
+    group: "Front Motors",
+    label: "Knee swing",
+    min: 0,
+    max: HALF_PI,
+    display: "pi",
+  },
+  {
+    key: "frontKneePhase",
+    group: "Front Motors",
+    label: "Knee phase",
+    min: 0,
+    max: TWO_PI,
+    display: "pi",
+  },
+  {
+    key: "frontTorque",
+    group: "Front Motors",
+    label: "Muscle strength",
+    min: 0.2,
+    max: 1.0,
+  },
 
-  { key: "rearShoulderAmp", group: "Rear Motors", label: "Shoulder swing", min: 0, max: HALF_PI, display: "pi" },
-  { key: "rearShoulderPhase", group: "Rear Motors", label: "Shoulder phase", min: 0, max: TWO_PI, display: "pi" },
-  { key: "rearKneeAmp", group: "Rear Motors", label: "Knee swing", min: 0, max: HALF_PI, display: "pi" },
-  { key: "rearKneePhase", group: "Rear Motors", label: "Knee phase", min: 0, max: TWO_PI, display: "pi" },
-  { key: "rearTorque", group: "Rear Motors", label: "Muscle strength", min: 0.2, max: 1.0 },
+  {
+    key: "rearShoulderAmp",
+    group: "Rear Motors",
+    label: "Shoulder swing",
+    min: 0,
+    max: HALF_PI,
+    display: "pi",
+  },
+  {
+    key: "rearShoulderPhase",
+    group: "Rear Motors",
+    label: "Shoulder phase",
+    min: 0,
+    max: TWO_PI,
+    display: "pi",
+  },
+  {
+    key: "rearKneeAmp",
+    group: "Rear Motors",
+    label: "Knee swing",
+    min: 0,
+    max: HALF_PI,
+    display: "pi",
+  },
+  {
+    key: "rearKneePhase",
+    group: "Rear Motors",
+    label: "Knee phase",
+    min: 0,
+    max: TWO_PI,
+    display: "pi",
+  },
+  {
+    key: "rearTorque",
+    group: "Rear Motors",
+    label: "Muscle strength",
+    min: 0.2,
+    max: 1.0,
+  },
 ];
 
 const GENE_BY_KEY: Record<GeneKey, GeneSpec> = Object.fromEntries(
@@ -61,15 +173,24 @@ export function geneRange(key: GeneKey): GeneSpec {
 }
 
 // Ordered list of gene groups (for the inspector and for grouped crossover).
-export const GENE_GROUPS: GeneGroup[] = ["Body", "Limbs", "Gait", "Front Motors", "Rear Motors"];
+export const GENE_GROUPS: GeneGroup[] = [
+  "Body",
+  "Limbs",
+  "Gait",
+  "Front Motors",
+  "Rear Motors",
+];
 
 export function createRandomGenome(): CreatureGenome {
   const genome = {} as CreatureGenome;
-  for (const g of GENES) genome[g.key] = g.min + Math.random() * (g.max - g.min);
+  for (const g of GENES)
+    genome[g.key] = g.min + Math.random() * (g.max - g.min);
   return genome;
 }
 
-export function createInitialPopulation(config: EvolutionConfig): CreatureGenome[] {
+export function createInitialPopulation(
+  config: EvolutionConfig,
+): CreatureGenome[] {
   return Array.from({ length: config.populationSize }, createRandomGenome);
 }
 

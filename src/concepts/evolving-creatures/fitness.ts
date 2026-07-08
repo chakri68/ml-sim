@@ -19,7 +19,9 @@ export const FITNESS_WEIGHTS = {
   instability: 2, // per accumulated instability unit
 };
 
-export function calculateCreatureFitness(result: CreatureEvaluationResult): number {
+export function calculateCreatureFitness(
+  result: CreatureEvaluationResult,
+): number {
   const w = FITNESS_WEIGHTS;
   const distanceScore = result.maxX * w.distance;
   const survivalBonus = result.timeAlive * w.survival;

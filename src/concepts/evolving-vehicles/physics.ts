@@ -10,6 +10,7 @@
 
 import { Circle, Edge, Polygon, Vec2, WheelJoint, World } from "planck";
 import { calculateFitness } from "./fitness.ts";
+import { sampleTerrain } from "./terrain.ts";
 import type {
   Terrain,
   VehicleEvaluationResult,
@@ -69,11 +70,19 @@ function chassisVertices(genome: VehicleGenome): Vec2[] {
   ];
 }
 
+// The procedural ground is infinite; physics only needs edges as far as any car
+// could travel in the evaluation window. GROUND_END comfortably exceeds a fast
+// car's reach; a car that runs off the end simply stops earning distance.
+const GROUND_START = -6;
+const GROUND_END = 440;
+const GROUND_STEP = 1;
+
 function buildGround(world: World, terrain: Terrain) {
   const ground = world.createBody({ type: "static" });
-  for (let i = 0; i < terrain.points.length - 1; i++) {
-    const a = terrain.points[i];
-    const b = terrain.points[i + 1];
+  const pts = sampleTerrain(terrain, GROUND_START, GROUND_END, GROUND_STEP);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i];
+    const b = pts[i + 1];
     ground.createFixture({
       shape: new Edge(new Vec2(a.x, a.y), new Vec2(b.x, b.y)),
       friction: 0.9,

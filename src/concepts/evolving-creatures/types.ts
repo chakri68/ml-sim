@@ -85,10 +85,4 @@ export type EvolutionHistoryPoint = {
   averageDistance: number;
 };
 
-export type TerrainPoint = { x: number; y: number };
-
-export type Terrain = {
-  id: string;
-  label: string;
-  points: TerrainPoint[];
-};
+export type { Terrain, TerrainPoint } from "../../lib/terrain.ts";

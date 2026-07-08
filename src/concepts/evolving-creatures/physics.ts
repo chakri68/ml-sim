@@ -16,6 +16,7 @@
 
 import { Box, Edge, RevoluteJoint, Vec2, World } from "planck";
 import { calculateCreatureFitness } from "./fitness.ts";
+import { sampleTerrain, terrainHeight } from "./terrain.ts";
 import type {
   CreatureEvaluationResult,
   CreatureGenome,
@@ -74,11 +75,19 @@ export type LiveMetrics = {
   instabilityScore: number;
 };
 
+// The procedural ground is infinite; physics only needs edges as far as a
+// creature could crawl in the evaluation window (a few metres — creatures are
+// slow), so a modest reach keeps the static-edge count low.
+const GROUND_START = -6;
+const GROUND_END = 120;
+const GROUND_STEP = 0.5;
+
 function buildGround(world: World, terrain: Terrain) {
   const ground = world.createBody({ type: "static" });
-  for (let i = 0; i < terrain.points.length - 1; i++) {
-    const a = terrain.points[i];
-    const b = terrain.points[i + 1];
+  const pts = sampleTerrain(terrain, GROUND_START, GROUND_END, GROUND_STEP);
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i];
+    const b = pts[i + 1];
     ground.createFixture({
       shape: new Edge(new Vec2(a.x, a.y), new Vec2(b.x, b.y)),
       friction: 0.9,
@@ -87,15 +96,7 @@ function buildGround(world: World, terrain: Terrain) {
 }
 
 function groundYAt(terrain: Terrain, x: number): number {
-  const pts = terrain.points;
-  if (x <= pts[0].x) return pts[0].y;
-  for (let i = 0; i < pts.length - 1; i++) {
-    if (x >= pts[i].x && x <= pts[i + 1].x) {
-      const t = (x - pts[i].x) / (pts[i + 1].x - pts[i].x || 1);
-      return pts[i].y + t * (pts[i + 1].y - pts[i].y);
-    }
-  }
-  return pts[pts.length - 1].y;
+  return terrainHeight(terrain, x);
 }
 
 type JointDrive = {
@@ -153,19 +154,33 @@ function buildCreature(
     filterGroupIndex: groupIndex,
   });
 
-  function buildLimb(sign: number, torqueGene: number, shoulderAmp: number, shoulderPhase: number, kneeAmp: number, kneePhase: number): Limb {
+  function buildLimb(
+    sign: number,
+    torqueGene: number,
+    shoulderAmp: number,
+    shoulderPhase: number,
+    kneeAmp: number,
+    kneePhase: number,
+  ): Limb {
     const attachX = spawnX + sign * genome.limbAttach * bodyHalfW;
     const attachY = spawnY + bottomLocalY;
-    const localShoulder = new Vec2(sign * genome.limbAttach * bodyHalfW, bottomLocalY);
+    const localShoulder = new Vec2(
+      sign * genome.limbAttach * bodyHalfW,
+      bottomLocalY,
+    );
 
-    const upper = world.createDynamicBody({ position: { x: attachX, y: attachY - upperHalfLen } });
+    const upper = world.createDynamicBody({
+      position: { x: attachX, y: attachY - upperHalfLen },
+    });
     upper.createFixture({
       shape: new Box(halfThick, upperHalfLen),
       density: DENSITY,
       friction: 0.9,
       filterGroupIndex: groupIndex,
     });
-    const lower = world.createDynamicBody({ position: { x: attachX, y: attachY - genome.upperLen - lowerHalfLen } });
+    const lower = world.createDynamicBody({
+      position: { x: attachX, y: attachY - genome.upperLen - lowerHalfLen },
+    });
     lower.createFixture({
       shape: new Box(halfThick, lowerHalfLen),
       density: DENSITY,
@@ -211,13 +226,32 @@ function buildCreature(
       lower,
       upperHalfLen,
       lowerHalfLen,
-      shoulder: { joint: shoulderJoint, amp: shoulderAmp, phase: shoulderPhase, maxTorque },
+      shoulder: {
+        joint: shoulderJoint,
+        amp: shoulderAmp,
+        phase: shoulderPhase,
+        maxTorque,
+      },
       knee: { joint: kneeJoint, amp: kneeAmp, phase: kneePhase, maxTorque },
     };
   }
 
-  const front = buildLimb(1, genome.frontTorque, genome.frontShoulderAmp, genome.frontShoulderPhase, genome.frontKneeAmp, genome.frontKneePhase);
-  const rear = buildLimb(-1, genome.rearTorque, genome.rearShoulderAmp, genome.rearShoulderPhase, genome.rearKneeAmp, genome.rearKneePhase);
+  const front = buildLimb(
+    1,
+    genome.frontTorque,
+    genome.frontShoulderAmp,
+    genome.frontShoulderPhase,
+    genome.frontKneeAmp,
+    genome.frontKneePhase,
+  );
+  const rear = buildLimb(
+    -1,
+    genome.rearTorque,
+    genome.rearShoulderAmp,
+    genome.rearShoulderPhase,
+    genome.rearKneeAmp,
+    genome.rearKneePhase,
+  );
   const limbs = [front, rear];
   const freq = genome.gaitFrequency;
 
@@ -248,10 +282,14 @@ function buildCreature(
   function driveJoint(d: JointDrive, time: number) {
     const target = d.amp * Math.sin(time * freq + d.phase);
     const current = d.joint.getJointAngle();
-    const speed = Math.max(-MAX_MOTOR_SPEED, Math.min(MAX_MOTOR_SPEED, MOTOR_GAIN * (target - current)));
+    const speed = Math.max(
+      -MAX_MOTOR_SPEED,
+      Math.min(MAX_MOTOR_SPEED, MOTOR_GAIN * (target - current)),
+    );
     d.joint.setMotorSpeed(speed);
     // work ~ |applied torque * angular displacement this step|
-    metrics.energyUsed += Math.abs(d.joint.getJointSpeed()) * d.maxTorque * FIXED_DT;
+    metrics.energyUsed +=
+      Math.abs(d.joint.getJointSpeed()) * d.maxTorque * FIXED_DT;
   }
 
   return {
@@ -270,7 +308,8 @@ function buildCreature(
       metrics.timeAlive += FIXED_DT;
 
       const pos = body.getPosition();
-      if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y) || pos.y < -30) exploded = true;
+      if (!Number.isFinite(pos.x) || !Number.isFinite(pos.y) || pos.y < -30)
+        exploded = true;
       const x = pos.x - spawnX;
       metrics.finalX = x;
       if (x > metrics.maxX + 0.02) {
@@ -285,10 +324,15 @@ function buildCreature(
       if (Math.abs(wrap(body.getAngle())) > FALL_ANGLE) metrics.fellOver = true;
 
       const angVel = body.getAngularVelocity();
-      if (Math.abs(angVel) > SPIN_ANGVEL) metrics.excessiveRotationSeconds += FIXED_DT;
+      if (Math.abs(angVel) > SPIN_ANGVEL)
+        metrics.excessiveRotationSeconds += FIXED_DT;
 
       const linVel = body.getLinearVelocity();
-      if (Math.abs(linVel.x) > INSTAB_LINVEL || Math.abs(linVel.y) > INSTAB_LINVEL || Math.abs(angVel) > INSTAB_ANGVEL) {
+      if (
+        Math.abs(linVel.x) > INSTAB_LINVEL ||
+        Math.abs(linVel.y) > INSTAB_LINVEL ||
+        Math.abs(angVel) > INSTAB_ANGVEL
+      ) {
         metrics.instabilityScore += FIXED_DT;
       }
 
@@ -307,7 +351,11 @@ function buildCreature(
       metrics.averageVelocityX = velSum / steps;
     },
     done() {
-      return exploded || metrics.instabilityScore >= INSTAB_ABORT || stuckRun >= STUCK_ABORT;
+      return (
+        exploded ||
+        metrics.instabilityScore >= INSTAB_ABORT ||
+        stuckRun >= STUCK_ABORT
+      );
     },
     deactivate() {
       active = false;
@@ -332,7 +380,13 @@ function buildCreature(
       let mx = 0;
       let my = 0;
       let mtot = 0;
-      for (const b of [body, front.upper, front.lower, rear.upper, rear.lower]) {
+      for (const b of [
+        body,
+        front.upper,
+        front.lower,
+        rear.upper,
+        rear.lower,
+      ]) {
         const m = b.getMass();
         const c = b.getWorldCenter();
         mx += c.x * m;
@@ -340,7 +394,13 @@ function buildCreature(
         mtot += m;
       }
       return {
-        body: { x: bp.x, y: bp.y, angle: body.getAngle(), halfW: bodyHalfW, halfH: bodyHalfH },
+        body: {
+          x: bp.x,
+          y: bp.y,
+          angle: body.getAngle(),
+          halfW: bodyHalfW,
+          halfH: bodyHalfH,
+        },
         limbs: limbStates,
         thickness: genome.thickness,
         com: { x: mx / mtot, y: my / mtot },
@@ -379,7 +439,10 @@ export type CreatureSim = {
   destroy(): void;
 };
 
-export function createCreatureSim(genome: CreatureGenome, terrain: Terrain): CreatureSim {
+export function createCreatureSim(
+  genome: CreatureGenome,
+  terrain: Terrain,
+): CreatureSim {
   const world = new World({ gravity: { x: 0, y: -10 } });
   buildGround(world, terrain);
   const inst = buildCreature(world, genome, terrain, CREATURE_GROUP);
@@ -425,7 +488,9 @@ export function createPopulationSim(
 ): PopulationSim {
   const world = new World({ gravity: { x: 0, y: -10 } });
   buildGround(world, terrain);
-  const insts = genomes.map((g) => buildCreature(world, g, terrain, CREATURE_GROUP));
+  const insts = genomes.map((g) =>
+    buildCreature(world, g, terrain, CREATURE_GROUP),
+  );
   let time = 0;
 
   function leaderIndex(): number {

@@ -104,7 +104,10 @@ export function mount(root: HTMLElement): () => void {
   const evalWorker = new Worker(new URL("./eval.worker.ts", import.meta.url), {
     type: "module",
   });
-  const evalPending = new Map<number, (results: CreatureEvaluationResult[]) => void>();
+  const evalPending = new Map<
+    number,
+    (results: CreatureEvaluationResult[]) => void
+  >();
   let evalSeq = 0;
   let ffToken = 0;
   evalWorker.onmessage = (e: MessageEvent<EvalResponse>) => {
@@ -114,7 +117,9 @@ export function mount(root: HTMLElement): () => void {
       resolve(e.data.results);
     }
   };
-  function evaluateInWorker(genomes: CreatureGenome[]): Promise<CreatureEvaluationResult[]> {
+  function evaluateInWorker(
+    genomes: CreatureGenome[],
+  ): Promise<CreatureEvaluationResult[]> {
     if (genomes.length === 0) return Promise.resolve([]);
     return new Promise((resolve) => {
       const id = ++evalSeq;
@@ -128,7 +133,10 @@ export function mount(root: HTMLElement): () => void {
     (state.racing && !state.paused) || state.fastForwarding || state.isReplay;
 
   // ------------------------------------------------------------- generations
-  function snapshot(r: CreatureEvaluationResult, generation: number): CreatureChampionSnapshot {
+  function snapshot(
+    r: CreatureEvaluationResult,
+    generation: number,
+  ): CreatureChampionSnapshot {
     return {
       generation,
       genome: r.genome,
@@ -169,7 +177,10 @@ export function mount(root: HTMLElement): () => void {
   }
 
   function breedNext() {
-    const next = createNextCreatureGeneration({ results: state.results!, config });
+    const next = createNextCreatureGeneration({
+      results: state.results!,
+      config,
+    });
     state.population = next.population;
     state.cached = next.cached;
     state.results = null;
@@ -266,10 +277,12 @@ export function mount(root: HTMLElement): () => void {
       const steps = Math.max(1, Math.round(state.replaySpeed));
       for (let i = 0; i < steps; i++) {
         state.sim.step();
-        if (state.sim.time >= config.evaluationSeconds || state.sim.allDone()) break;
+        if (state.sim.time >= config.evaluationSeconds || state.sim.allDone())
+          break;
       }
       renderRace();
-      if (state.sim.time >= config.evaluationSeconds || state.sim.allDone()) finishRace();
+      if (state.sim.time >= config.evaluationSeconds || state.sim.allDone())
+        finishRace();
     }
     raf = requestAnimationFrame(frame);
   }
@@ -384,7 +397,12 @@ export function mount(root: HTMLElement): () => void {
   // ------------------------------------------------------------- stats DOM
   const stat = (label: string) => {
     const value = el("span", { class: "ec-stat-value" }, "—");
-    const row = el("div", { class: "ec-stat" }, el("span", { class: "ec-stat-label" }, label), value);
+    const row = el(
+      "div",
+      { class: "ec-stat" },
+      el("span", { class: "ec-stat-label" }, label),
+      value,
+    );
     return { row, value };
   };
   const genStat = stat("generation");
@@ -395,16 +413,28 @@ export function mount(root: HTMLElement): () => void {
   const bestSpeedStat = stat("best speed");
   const liveDistStat = stat("live distance");
   const terrainStat = stat("terrain");
-  const statusBadge = el("span", { class: "ec-status", "data-status": "idle" }, "Idle");
+  const statusBadge = el(
+    "span",
+    { class: "ec-status", "data-status": "idle" },
+    "Idle",
+  );
 
   function refreshStats() {
     genStat.value.textContent = String(state.generation);
-    bestFitStat.value.textContent = state.bestEver ? state.bestEver.fitness.toFixed(1) : "—";
+    bestFitStat.value.textContent = state.bestEver
+      ? state.bestEver.fitness.toFixed(1)
+      : "—";
     const last = state.history[state.history.length - 1];
     avgFitStat.value.textContent = last ? last.averageFitness.toFixed(1) : "—";
-    bestDistStat.value.textContent = state.bestEver ? `${state.bestEver.maxX.toFixed(1)} m` : "—";
-    avgDistStat.value.textContent = last ? `${last.averageDistance.toFixed(1)} m` : "—";
-    bestSpeedStat.value.textContent = state.bestEver ? `${state.bestEver.averageVelocityX.toFixed(2)} m/s` : "—";
+    bestDistStat.value.textContent = state.bestEver
+      ? `${state.bestEver.maxX.toFixed(1)} m`
+      : "—";
+    avgDistStat.value.textContent = last
+      ? `${last.averageDistance.toFixed(1)} m`
+      : "—";
+    bestSpeedStat.value.textContent = state.bestEver
+      ? `${state.bestEver.averageVelocityX.toFixed(2)} m/s`
+      : "—";
     terrainStat.value.textContent = terrain.label;
     statusBadge.textContent = state.statusText;
     statusBadge.setAttribute("data-status", state.statusSlug);
@@ -413,8 +443,16 @@ export function mount(root: HTMLElement): () => void {
 
   // ------------------------------------------------------------- inspector
   const inspectorRows = new Map<GeneKey, HTMLElement>();
-  const currentBtn = el("button", { type: "button", class: "ec-seg ec-seg--on" }, "Current gen");
-  const bestBtn = el("button", { type: "button", class: "ec-seg" }, "Best ever");
+  const currentBtn = el(
+    "button",
+    { type: "button", class: "ec-seg ec-seg--on" },
+    "Current gen",
+  );
+  const bestBtn = el(
+    "button",
+    { type: "button", class: "ec-seg" },
+    "Best ever",
+  );
   currentBtn.addEventListener("click", () => setInspectMode("current"));
   bestBtn.addEventListener("click", () => setInspectMode("best"));
   const inspectorSourceNote = el("p", { class: "ec-note" });
@@ -423,7 +461,11 @@ export function mount(root: HTMLElement): () => void {
     { class: "ec-inspector" },
     el(
       "div",
-      { class: "ec-seg-group", role: "group", "aria-label": "Which genome to inspect" },
+      {
+        class: "ec-seg-group",
+        role: "group",
+        "aria-label": "Which genome to inspect",
+      },
       currentBtn,
       bestBtn,
     ),
@@ -435,7 +477,12 @@ export function mount(root: HTMLElement): () => void {
       const value = el("span", { class: "ec-stat-value" }, "—");
       inspectorRows.set(spec.key, value);
       inspector.append(
-        el("div", { class: "ec-stat" }, el("span", { class: "ec-stat-label" }, spec.label), value),
+        el(
+          "div",
+          { class: "ec-stat" },
+          el("span", { class: "ec-stat-label" }, spec.label),
+          value,
+        ),
       );
     }
   }
@@ -446,7 +493,10 @@ export function mount(root: HTMLElement): () => void {
     refreshInspector();
   }
   function refreshInspector() {
-    const g = state.inspectMode === "best" ? state.bestEver?.genome : state.champion?.genome;
+    const g =
+      state.inspectMode === "best"
+        ? state.bestEver?.genome
+        : state.champion?.genome;
     inspectorSourceNote.textContent =
       state.inspectMode === "best"
         ? state.bestEver
@@ -477,7 +527,13 @@ export function mount(root: HTMLElement): () => void {
       role: "img",
       "aria-label": "Best and average fitness per generation",
     },
-    svg("line", { x1: GP, y1: GH - GP, x2: GW - GP, y2: GH - GP, class: "ec-graph-axis" }),
+    svg("line", {
+      x1: GP,
+      y1: GH - GP,
+      x2: GW - GP,
+      y2: GH - GP,
+      class: "ec-graph-axis",
+    }),
     graphAvg,
     graphBest,
   );
@@ -493,9 +549,26 @@ export function mount(root: HTMLElement): () => void {
     const gMin = h[0].generation;
     const span = Math.max(1, h[h.length - 1].generation - gMin);
     const px = (g: number) => GP + ((g - gMin) / span) * (GW - GP * 2);
-    const py = (f: number) => GH - GP - ((f - minF) / (maxF - minF || 1)) * (GH - GP * 2);
-    graphBest.setAttribute("points", h.map((p) => `${px(p.generation).toFixed(1)},${py(p.bestFitness).toFixed(1)}`).join(" "));
-    graphAvg.setAttribute("points", h.map((p) => `${px(p.generation).toFixed(1)},${py(p.averageFitness).toFixed(1)}`).join(" "));
+    const py = (f: number) =>
+      GH - GP - ((f - minF) / (maxF - minF || 1)) * (GH - GP * 2);
+    graphBest.setAttribute(
+      "points",
+      h
+        .map(
+          (p) =>
+            `${px(p.generation).toFixed(1)},${py(p.bestFitness).toFixed(1)}`,
+        )
+        .join(" "),
+    );
+    graphAvg.setAttribute(
+      "points",
+      h
+        .map(
+          (p) =>
+            `${px(p.generation).toFixed(1)},${py(p.averageFitness).toFixed(1)}`,
+        )
+        .join(" "),
+    );
   }
 
   // ------------------------------------------------------------- controls
@@ -508,7 +581,11 @@ export function mount(root: HTMLElement): () => void {
     format: (v: number) => string;
     onInput: (v: number) => void;
   }) {
-    const valueEl = el("span", { class: "ec-slider-value" }, opts.format(opts.value));
+    const valueEl = el(
+      "span",
+      { class: "ec-slider-value" },
+      opts.format(opts.value),
+    );
     const input = el("input", {
       type: "range",
       min: String(opts.min),
@@ -526,21 +603,38 @@ export function mount(root: HTMLElement): () => void {
     const field = el(
       "label",
       { class: "ec-field" },
-      el("span", { class: "ec-field-head" }, el("span", {}, opts.label), valueEl),
+      el(
+        "span",
+        { class: "ec-field-head" },
+        el("span", {}, opts.label),
+        valueEl,
+      ),
       input,
     );
     return { field, input, valueEl };
   }
 
   const btn = (label: string, onClick: () => void, primary = false) =>
-    el("button", { type: "button", class: primary ? "ec-btn ec-btn--primary" : "ec-btn", onClick }, label);
+    el(
+      "button",
+      {
+        type: "button",
+        class: primary ? "ec-btn ec-btn--primary" : "ec-btn",
+        onClick,
+      },
+      label,
+    );
   const startBtn = btn("Start evolution", startEvolution, true);
   const pauseBtn = btn("Pause", pauseEvolution);
   const stepBtn = btn("Step gen", stepGeneration);
   const ffBtn = btn("Evolve ×10", () => fastForward(10));
   const resetBtn = btn("Reset", resetAll);
-  const replayBestBtn = btn("Replay best ever", () => replaySnapshot(state.bestEver));
-  const replayGenBtn = btn("Replay this gen", () => replaySnapshot(state.champions[state.replayGen - 1] ?? null));
+  const replayBestBtn = btn("Replay best ever", () =>
+    replaySnapshot(state.bestEver),
+  );
+  const replayGenBtn = btn("Replay this gen", () =>
+    replaySnapshot(state.champions[state.replayGen - 1] ?? null),
+  );
 
   // Champion-history scrubber: pick any past generation and replay its champion.
   const replaySlider = slider({
@@ -581,10 +675,20 @@ export function mount(root: HTMLElement): () => void {
     ...terrains.map((t) => el("option", { value: t.id }, t.label)),
   ) as HTMLSelectElement;
   terrainSelect.value = terrain.id;
-  terrainSelect.addEventListener("change", () => changeTerrain(terrainSelect.value));
+  terrainSelect.addEventListener("change", () =>
+    changeTerrain(terrainSelect.value),
+  );
 
-  const check = (label: string, checked: boolean, onChange: (v: boolean) => void) => {
-    const input = el("input", { type: "checkbox", class: "ec-check", "aria-label": label }) as HTMLInputElement;
+  const check = (
+    label: string,
+    checked: boolean,
+    onChange: (v: boolean) => void,
+  ) => {
+    const input = el("input", {
+      type: "checkbox",
+      class: "ec-check",
+      "aria-label": label,
+    }) as HTMLInputElement;
     input.checked = checked;
     input.addEventListener("change", () => onChange(input.checked));
     return el("label", { class: "ec-toggle" }, input, el("span", {}, label));
@@ -593,8 +697,21 @@ export function mount(root: HTMLElement): () => void {
   const controlsTab = el(
     "div",
     { class: "side-controls" },
-    el("div", { class: "ec-status-row" }, el("span", { class: "ec-controls-title" }, "Status"), statusBadge),
-    el("div", { class: "ec-buttons" }, startBtn, pauseBtn, stepBtn, ffBtn, resetBtn),
+    el(
+      "div",
+      { class: "ec-status-row" },
+      el("span", { class: "ec-controls-title" }, "Status"),
+      statusBadge,
+    ),
+    el(
+      "div",
+      { class: "ec-buttons" },
+      startBtn,
+      pauseBtn,
+      stepBtn,
+      ffBtn,
+      resetBtn,
+    ),
     el("div", { class: "ec-buttons" }, replayBestBtn, replayGenBtn),
     replaySlider.field,
     field("Terrain", terrainSelect),

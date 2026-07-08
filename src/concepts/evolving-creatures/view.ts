@@ -5,6 +5,7 @@
 // reused across frames. The engine hands it what to draw each frame.
 
 import { svg } from "../../lib/dom.ts";
+import { sampleTerrain, terrainHeight } from "./terrain.ts";
 import type { Terrain } from "./types.ts";
 import type { PopulationRenderItem } from "./physics.ts";
 
@@ -44,10 +45,17 @@ export function createCreatureView(): CreatureView {
     class: "ec-scene",
     preserveAspectRatio: "xMidYMid meet",
     role: "img",
-    "aria-label": "Physics viewport: a population of crawling creatures on terrain",
+    "aria-label":
+      "Physics viewport: a population of crawling creatures on terrain",
   });
 
-  const sky = svg("rect", { x: 0, y: 0, width: VW, height: VH, class: "ec-sky" });
+  const sky = svg("rect", {
+    x: 0,
+    y: 0,
+    width: VW,
+    height: VH,
+    class: "ec-sky",
+  });
   const groundFill = svg("path", { class: "ec-ground" });
   const groundLine = svg("polyline", { class: "ec-ground-line" });
   const markers = svg("g", { class: "ec-markers" });
@@ -56,7 +64,16 @@ export function createCreatureView(): CreatureView {
   const trailPath = svg("polyline", { class: "ec-trail" });
   const fleet = svg("g", { class: "ec-fleet" });
 
-  root.append(sky, groundFill, groundLine, markers, startLine, ghostPath, trailPath, fleet);
+  root.append(
+    sky,
+    groundFill,
+    groundLine,
+    markers,
+    startLine,
+    ghostPath,
+    trailPath,
+    fleet,
+  );
 
   let terrain: Terrain | null = null;
   let cameraX = 0;
@@ -71,7 +88,9 @@ export function createCreatureView(): CreatureView {
       svg("polyline", { class: "ec-limb" }),
       svg("polyline", { class: "ec-limb" }),
     ];
-    const joints = Array.from({ length: 6 }, () => svg("circle", { r: 2.6, class: "ec-joint" }));
+    const joints = Array.from({ length: 6 }, () =>
+      svg("circle", { r: 2.6, class: "ec-joint" }),
+    );
     const com = svg("circle", { r: 4, class: "ec-com" });
     const g = svg("g", {}, limbs[0], limbs[1], body, ...joints, com);
     fleet.append(g);
@@ -87,29 +106,24 @@ export function createCreatureView(): CreatureView {
 
   function groundYAt(x: number): number {
     if (!terrain) return 0;
-    const pts = terrain.points;
-    if (x <= pts[0].x) return pts[0].y;
-    for (let i = 0; i < pts.length - 1; i++) {
-      if (x >= pts[i].x && x <= pts[i + 1].x) {
-        const t = (x - pts[i].x) / (pts[i + 1].x - pts[i].x || 1);
-        return pts[i].y + t * (pts[i + 1].y - pts[i].y);
-      }
-    }
-    return pts[pts.length - 1].y;
+    return terrainHeight(terrain, x);
   }
 
   function drawTerrain() {
     if (!terrain) return;
+    // Sample only the visible window, so the ground scrolls infinitely.
     const leftW = cameraX - 2;
     const rightW = cameraX + VW / PPM + 2;
-    const visible = terrain.points.filter((p) => p.x >= leftW && p.x <= rightW);
+    const visible = sampleTerrain(terrain, leftW, rightW, 0.5);
     if (visible.length < 2) {
       groundFill.setAttribute("d", "");
       groundLine.setAttribute("points", "");
       markers.replaceChildren();
       return;
     }
-    const line = visible.map((p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`);
+    const line = visible.map(
+      (p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`,
+    );
     groundLine.setAttribute("points", line.join(" "));
     const first = visible[0];
     const last = visible[visible.length - 1];
@@ -123,8 +137,23 @@ export function createCreatureView(): CreatureView {
     for (let mx = startM; mx <= rightW; mx += 5) {
       const gy = groundYAt(mx);
       marks.push(
-        svg("line", { x1: sx(mx), y1: sy(gy), x2: sx(mx), y2: sy(gy) - 12, class: "ec-marker-tick" }),
-        svg("text", { x: sx(mx), y: sy(gy) - 16, class: "ec-marker-label", "text-anchor": "middle" }, `${mx}m`),
+        svg("line", {
+          x1: sx(mx),
+          y1: sy(gy),
+          x2: sx(mx),
+          y2: sy(gy) - 12,
+          class: "ec-marker-tick",
+        }),
+        svg(
+          "text",
+          {
+            x: sx(mx),
+            y: sy(gy) - 16,
+            class: "ec-marker-label",
+            "text-anchor": "middle",
+          },
+          `${mx}m`,
+        ),
       );
     }
     markers.replaceChildren(...marks);
@@ -145,10 +174,18 @@ export function createCreatureView(): CreatureView {
       el.setAttribute("points", "");
       return;
     }
-    el.setAttribute("points", pts.map((p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join(" "));
+    el.setAttribute(
+      "points",
+      pts.map((p) => `${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join(" "),
+    );
   }
 
-  function drawCreature(gfx: CreatureGfx, item: PopulationRenderItem, showJoints: boolean, showCoM: boolean) {
+  function drawCreature(
+    gfx: CreatureGfx,
+    item: PopulationRenderItem,
+    showJoints: boolean,
+    showCoM: boolean,
+  ) {
     const c = item.state;
     const b = c.body;
     const cos = Math.cos(b.angle);
@@ -162,7 +199,10 @@ export function createCreatureView(): CreatureView {
     gfx.body.setAttribute(
       "points",
       corners
-        .map(([lx, ly]) => `${sx(b.x + lx * cos - ly * sin).toFixed(1)},${sy(b.y + lx * sin + ly * cos).toFixed(1)}`)
+        .map(
+          ([lx, ly]) =>
+            `${sx(b.x + lx * cos - ly * sin).toFixed(1)},${sy(b.y + lx * sin + ly * cos).toFixed(1)}`,
+        )
         .join(" "),
     );
 
@@ -223,10 +263,19 @@ export function createCreatureView(): CreatureView {
     // draw the leader last so it sits on top of the grey crowd
     const order = params.creatures
       .map((_, i) => i)
-      .sort((a, b) => Number(params.creatures[a].isLeader) - Number(params.creatures[b].isLeader));
+      .sort(
+        (a, b) =>
+          Number(params.creatures[a].isLeader) -
+          Number(params.creatures[b].isLeader),
+      );
     let k = 0;
     for (const idx of order) {
-      drawCreature(pool[k], params.creatures[idx], params.showJoints, params.showCoM);
+      drawCreature(
+        pool[k],
+        params.creatures[idx],
+        params.showJoints,
+        params.showCoM,
+      );
       pool[k].g.style.display = "";
       k++;
     }

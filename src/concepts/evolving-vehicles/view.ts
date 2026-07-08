@@ -5,6 +5,7 @@
 // reused across frames. Stateless-ish: the engine hands it what to draw.
 
 import { svg } from "../../lib/dom.ts";
+import { sampleTerrain, terrainHeight } from "./terrain.ts";
 import type { Terrain } from "./types.ts";
 import type { PopulationRenderItem } from "./physics.ts";
 
@@ -110,22 +111,15 @@ export function createVehicleView(): VehicleView {
 
   function groundYAt(x: number): number {
     if (!terrain) return 0;
-    const pts = terrain.points;
-    if (x <= pts[0].x) return pts[0].y;
-    for (let i = 0; i < pts.length - 1; i++) {
-      if (x >= pts[i].x && x <= pts[i + 1].x) {
-        const t = (x - pts[i].x) / (pts[i + 1].x - pts[i].x || 1);
-        return pts[i].y + t * (pts[i + 1].y - pts[i].y);
-      }
-    }
-    return pts[pts.length - 1].y;
+    return terrainHeight(terrain, x);
   }
 
   function drawTerrain() {
     if (!terrain) return;
+    // Sample only the visible window, so the ground scrolls infinitely.
     const leftW = cameraX - 2;
     const rightW = cameraX + VW / PPM + 2;
-    const visible = terrain.points.filter((p) => p.x >= leftW && p.x <= rightW);
+    const visible = sampleTerrain(terrain, leftW, rightW, 0.5);
     if (visible.length < 2) {
       groundFill.setAttribute("d", "");
       groundLine.setAttribute("points", "");

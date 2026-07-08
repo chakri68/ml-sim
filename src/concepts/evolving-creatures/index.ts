@@ -7,7 +7,9 @@ import { el } from "../../lib/dom.ts";
 import { fadeIn } from "../../lib/transition.ts";
 import type { Concept } from "../types.ts";
 
-const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const reducedMotion = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+).matches;
 
 function mount(root: HTMLElement): () => void {
   let realCleanup: (() => void) | null = null;
@@ -47,11 +49,18 @@ function mount(root: HTMLElement): () => void {
 export const evolvingCreatures: Concept = {
   id: "evolving-creatures",
   title: "Evolving Creatures",
-  subtitle: "Watch bodies and movement patterns evolve into strange locomotion.",
+  subtitle:
+    "Watch bodies and movement patterns evolve into strange locomotion.",
   description:
     "An advanced genetic algorithm where a genome encodes both a creature's body and the rhythmic sine-wave motors driving its joints. A whole population is dropped into a 2D physics world and scored on how well it moves; selection, crossover, and mutation evolve morphology and gait together, until accidental flailing becomes something that genuinely crawls.",
   difficulty: "advanced",
-  tags: ["genetic algorithms", "evolution", "physics", "locomotion", "artificial life"],
+  tags: [
+    "genetic algorithms",
+    "evolution",
+    "physics",
+    "locomotion",
+    "artificial life",
+  ],
   route: "evolving-creatures",
   mount,
   preview(root) {
@@ -71,7 +80,10 @@ export const evolvingCreatures: Concept = {
     body.setAttribute("height", "4");
     body.setAttribute("rx", "1.4");
     body.setAttribute("class", "card-dot");
-    const legs = [document.createElementNS(NS, "polyline"), document.createElementNS(NS, "polyline")];
+    const legs = [
+      document.createElementNS(NS, "polyline"),
+      document.createElementNS(NS, "polyline"),
+    ];
     for (const leg of legs) {
       leg.setAttribute("class", "card-curve");
       leg.setAttribute("fill", "none");
