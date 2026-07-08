@@ -91,6 +91,7 @@ export function createMetricsTracker(
   let sinceProgress = 0;
   let stuckRun = 0;
   let exploded = false;
+  let minY = spawnY; // lowest point reached so far, for jump height
 
   return {
     metrics,
@@ -125,8 +126,14 @@ export function createMetricsTracker(
       const rotations = Math.abs(s.angle - initialAngle) / TWO_PI;
       metrics.flipCount = Math.floor(rotations);
 
-      const jump = s.y - spawnY;
-      if (jump > metrics.jumpHeight) metrics.jumpHeight = jump;
+      // Jump height = the biggest rise above the lowest point reached so far —
+      // a genuine hop out of a trough. Measuring against spawn would be wrong for
+      // a body (like the Jumper) that spawns at full extension: it starts at its
+      // highest pose and could never "exceed" it. Falling just lowers minY, so a
+      // body that only drops registers ~0.
+      if (s.y < minY) minY = s.y;
+      const rise = s.y - minY;
+      if (rise > metrics.jumpHeight) metrics.jumpHeight = rise;
       if (!s.anyOnGround) metrics.airtime += FIXED_DT;
 
       if (

@@ -209,6 +209,7 @@ export function mount(root: HTMLElement): () => void {
   function buildSim() {
     state.sim?.destroy();
     state.sim = createPopulationSim(template, state.population, terrain);
+    view.rollDecor(); // ~20% chance of an easter-egg sign, re-rolled each generation
     renderStatic();
   }
 

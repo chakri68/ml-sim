@@ -6,6 +6,7 @@
 // same template, the part layout is stable and rebuilds are rare.
 
 import { svg } from "../../lib/dom.ts";
+import { rollTerrainSigns, type TerrainSign } from "../../lib/signs.ts";
 import { sampleTerrain, terrainHeight } from "./terrain.ts";
 import type { RenderPart, Terrain, Vec2 } from "./types.ts";
 import type { PopulationRenderItem } from "./physics.ts";
@@ -19,6 +20,7 @@ const CAMERA_LEAD = 0.34;
 export type SandboxView = {
   el: SVGSVGElement;
   setTerrain(terrain: Terrain): void;
+  rollDecor(): void; // re-roll the rare easter-egg signs (call per generation)
   render(params: {
     items: PopulationRenderItem[];
     focusX: number;
@@ -60,6 +62,7 @@ export function createSandboxView(): SandboxView {
   const groundFill = svg("path", { class: "es-ground" });
   const groundLine = svg("polyline", { class: "es-ground-line" });
   const markers = svg("g", { class: "es-markers" });
+  const decor = svg("g", { class: "es-decor" }); // easter-egg signs, behind the fleet
   const startLine = svg("line", { class: "es-startline" });
   const ghostPath = svg("polyline", { class: "es-ghost" });
   const trailPath = svg("polyline", { class: "es-trail" });
@@ -69,6 +72,7 @@ export function createSandboxView(): SandboxView {
     groundFill,
     groundLine,
     markers,
+    decor,
     startLine,
     ghostPath,
     trailPath,
@@ -78,6 +82,7 @@ export function createSandboxView(): SandboxView {
   let terrain: Terrain | null = null;
   let cameraX = 0;
   const pool: PhenoGfx[] = [];
+  let signGfx: { x: number; angle: number; g: SVGGElement }[] = [];
 
   const sx = (wx: number) => (wx - cameraX) * PPM;
   const sy = (wy: number) => GROUND_SCREEN_Y - wy * PPM;
@@ -200,6 +205,58 @@ export function createSandboxView(): SandboxView {
     terrain = t;
   }
 
+  // Build one sign as a little post + board + text, drawn in screen-space px so
+  // it stays legible; the group is translated to its ground anchor and rotated by
+  // its tilt each frame (see positionSigns).
+  function makeSign(sign: TerrainSign): SVGGElement {
+    const postPx = 34;
+    const boardH = 20;
+    const boardW = Math.max(44, sign.text.length * 7 + 14);
+    const boardTop = -postPx - boardH;
+    const g = svg("g", { class: "es-sign" });
+    g.append(
+      svg("line", { x1: 0, y1: 0, x2: 0, y2: -postPx, class: "es-sign-post" }),
+      svg("rect", {
+        x: -boardW / 2,
+        y: boardTop,
+        width: boardW,
+        height: boardH,
+        rx: 3,
+        class: "es-sign-board",
+      }),
+      svg(
+        "text",
+        {
+          x: 0,
+          y: boardTop + boardH / 2,
+          class: "es-sign-text",
+          "text-anchor": "middle",
+          "dominant-baseline": "central",
+        },
+        sign.text,
+      ),
+    );
+    return g;
+  }
+
+  function rollDecor() {
+    const signs = rollTerrainSigns();
+    signGfx = signs.map((s) => ({ x: s.x, angle: s.angle, g: makeSign(s) }));
+    decor.replaceChildren(...signGfx.map((s) => s.g));
+  }
+
+  function positionSigns() {
+    if (!terrain) return;
+    for (const s of signGfx) {
+      const gy = terrainHeight(terrain, s.x);
+      const deg = (s.angle * 180) / Math.PI;
+      s.g.setAttribute(
+        "transform",
+        `translate(${sx(s.x).toFixed(1)} ${sy(gy).toFixed(1)}) rotate(${deg.toFixed(1)})`,
+      );
+    }
+  }
+
   function drawTerrain() {
     if (!terrain) return;
     // Sample only the visible window, so the ground scrolls infinitely without
@@ -283,6 +340,7 @@ export function createSandboxView(): SandboxView {
   }) {
     cameraX = params.focusX - (VW / PPM) * CAMERA_LEAD;
     drawTerrain();
+    positionSigns();
     drawPolyPath(ghostPath, params.ghost);
     drawPolyPath(trailPath, params.trail);
 
@@ -306,6 +364,7 @@ export function createSandboxView(): SandboxView {
   return {
     el: root,
     setTerrain,
+    rollDecor,
     render,
     dispose() {
       pool.length = 0;
