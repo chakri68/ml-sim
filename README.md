@@ -4,8 +4,7 @@ Machine learning, but you can see it move.
 
 It's a small museum for ML concepts you can drag, break, reset, and (ideally)
 understand. It started with a single exhibit and grew into a handful — because
-the whole thing is built so that adding the next one is a data change, not a
-weekend of regret.
+adding the next one is a data change, not a weekend of regret.
 
 Live: **[ml-sims.chakri.me](https://ml-sims.chakri.me/)**
 
@@ -113,8 +112,8 @@ npm run preview   # serve the built version
 ## Things I decided on purpose
 
 - **Discrete steps, not per-frame animation** (Gradient Descent). GD converges in
-  ~30–50 steps, so the loop steps on a timer and the SVG point _tweens_ between
-  steps in CSS. Smoother, and no re-render thrash.
+  ~30–50 steps, so the loop advances on a timer and the SVG point _tweens_
+  between them in CSS. Smoother, and no re-render thrash.
 - **Divergence won't crash the party.** `NaN`/overflow is guarded everywhere — an
   optimizer point that flies off-chart pins to the edge, and a physics body that
   explodes is scored gracefully rather than taking the tab down.
