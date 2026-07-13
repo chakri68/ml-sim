@@ -1,33 +1,14 @@
+/* Shared Amber Phosphor tokens (bg, panel-2, panel, border, text, muted, accent,
+   accent-dim, warn, danger, fonts, color-scheme) come from
+   theme.chakri.me/tokens.css. Below: ml-viz's own additions only. */
 :root {
-  /* Surfaces (darkest → lightest) */
-  --bg: #000000; /* pure black — canvas / deepest wells */
-  --bg-2: #000; /* input & button backgrounds (also near-black) */
-  --panel: #0b0b0a; /* main surfaces, a hair above black */
-  --panel-solid: #0b0b0a;
-
-  /* Lines & text */
-  --border: #2b2925; /* warm dark-gray hairline borders */
+  --panel-solid: var(--panel); /* solid surface — alias onto the shared token */
   --border-strong: #3a362e; /* slightly stronger warm-gray */
-  --text: #ece7da; /* warm off-white — primary text */
-  --text-dim: #8b8574; /* warm gray — labels, secondary text */
   --text-h: #f5f0e4; /* headings — brightest warm white */
-
-  /* Accent — the ONLY chromatic color */
-  --accent: #ffb000; /* amber phosphor — active/primary/interactive */
-  --accent-dim: #cc8a00; /* hover / pressed / dim data lines */
-  --accent-2: #ffb000; /* single-accent theme: collapse to amber */
-  --accent-warn: #ff6a2b; /* caution states, distinct from accent */
-  --accent-bad: #ff6b6b; /* danger / destructive */
 
   --grid: rgba(255, 176, 0, 0.08);
   --curve: #cc8a00;
   --shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
-
-  /* Fonts */
-  --font-pixel: "Press Start 2P", ui-monospace, monospace;
-  --font-mono:
-    "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  --mono: var(--font-mono);
 
   font: 14px/1.55 var(--font-mono);
   color: var(--text);
@@ -38,7 +19,6 @@
       transparent 60%
     ),
     var(--bg);
-  color-scheme: dark;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -160,7 +140,7 @@ a {
   text-shadow: 0 0 14px rgba(255, 176, 0, 0.5);
 }
 .loader-text {
-  color: var(--text-dim);
+  color: var(--muted);
   font-family: var(--font-pixel);
   font-size: 9px;
   line-height: 1.8;
@@ -202,7 +182,7 @@ a {
 .hero-sub {
   margin-top: 24px;
   font-size: clamp(14px, 2vw, 16px);
-  color: var(--text-dim);
+  color: var(--muted);
   max-width: 620px;
 }
 
@@ -213,7 +193,7 @@ a {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-dim);
+  color: var(--muted);
   margin-bottom: 18px;
 }
 .grid-title::before {
@@ -289,7 +269,7 @@ a {
   font-size: 17px;
 }
 .card-sub {
-  color: var(--text-dim);
+  color: var(--muted);
   font-size: 13px;
   margin: 0;
 }
@@ -304,7 +284,7 @@ a {
   border-radius: 999px;
   background: var(--bg);
   border: 1px solid var(--border);
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .card-explore {
   margin-top: auto;
@@ -328,12 +308,12 @@ a {
   background: rgba(255, 176, 0, 0.1);
 }
 .badge--intermediate {
-  color: var(--accent-warn);
+  color: var(--warn);
   border-color: rgba(255, 106, 43, 0.5);
   background: rgba(255, 106, 43, 0.1);
 }
 .badge--advanced {
-  color: var(--accent-bad);
+  color: var(--danger);
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.1);
 }
@@ -344,7 +324,7 @@ a {
   border-top: 1px solid var(--border);
   display: flex;
   justify-content: space-between;
-  color: var(--text-dim);
+  color: var(--muted);
   font-size: 13px;
 }
 
@@ -365,7 +345,7 @@ a {
   display: flex;
   gap: 4px;
   padding: 8px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
@@ -375,7 +355,7 @@ a {
   border-radius: 8px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--muted);
   font: inherit;
   font-size: 13px;
   font-weight: 600;
@@ -496,7 +476,7 @@ body.concept-open #outlet {
 .concept-back {
   font-size: 13px;
   text-decoration: none;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .concept-back:hover {
   color: var(--accent);
@@ -511,7 +491,7 @@ body.concept-open #outlet {
   margin: 14px 0 10px;
 }
 .concept-sub {
-  color: var(--text-dim);
+  color: var(--muted);
   font-size: 13px;
   line-height: 1.5;
   margin: 0;
@@ -561,7 +541,7 @@ body.concept-open #outlet {
 .gd-3d-fallback {
   padding: 40px;
   text-align: center;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 
 .gd-loading {
@@ -570,7 +550,7 @@ body.concept-open #outlet {
   place-content: center;
   justify-items: center;
   gap: 16px;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .gd-loading p {
   font-family: var(--font-pixel);
@@ -590,7 +570,7 @@ body.concept-open #outlet {
 .gd-seg-group {
   display: flex;
   gap: 4px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   padding: 4px;
   border-radius: 10px;
   border: 1px solid var(--border);
@@ -601,7 +581,7 @@ body.concept-open #outlet {
   border-radius: 7px;
   border: none;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--muted);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
@@ -624,13 +604,13 @@ body.concept-open #outlet {
 }
 .gd-hint {
   font-size: 11.5px;
-  color: var(--text-dim);
+  color: var(--muted);
   line-height: 1.4;
 }
 .gd-text {
   padding: 8px 10px;
   border-radius: 4px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text-h);
   border: 1px solid var(--border);
   font: 13px var(--font-mono);
@@ -643,7 +623,7 @@ body.concept-open #outlet {
 }
 .gd-error {
   font-size: 12.5px;
-  color: var(--accent-bad);
+  color: var(--danger);
   margin: 0;
   min-height: 1em;
 }
@@ -677,7 +657,7 @@ body.concept-open #outlet {
   stroke-linejoin: round;
 }
 .gd-tangent {
-  stroke: var(--accent-warn);
+  stroke: var(--warn);
   stroke-width: 2;
   opacity: 0.9;
 }
@@ -687,7 +667,7 @@ body.concept-open #outlet {
   stroke-dasharray: 2 4;
 }
 .gd-x-label {
-  fill: var(--text-dim);
+  fill: var(--muted);
   font-size: 12px;
   font-family: var(--font-mono);
 }
@@ -714,7 +694,7 @@ body.concept-open #outlet {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .gd-controls-title::before {
   content: ">";
@@ -747,12 +727,12 @@ body.concept-open #outlet {
   background: rgba(255, 176, 0, 0.1);
 }
 .gd-status[data-status="overshooting"] {
-  color: var(--accent-warn);
+  color: var(--warn);
   border-color: rgba(255, 106, 43, 0.5);
   background: rgba(255, 106, 43, 0.14);
 }
 .gd-status[data-status="diverging"] {
-  color: var(--accent-bad);
+  color: var(--danger);
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.16);
 }
@@ -769,7 +749,7 @@ body.concept-open #outlet {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .gd-slider-value {
   font-variant-numeric: tabular-nums;
@@ -786,7 +766,7 @@ body.concept-open #outlet {
   width: 100%;
   padding: 8px 10px;
   border-radius: 4px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text-h);
   border: 1px solid var(--border);
   font: inherit;
@@ -797,7 +777,7 @@ body.concept-open #outlet {
 }
 .gd-fn-note {
   font-size: 12.5px;
-  color: var(--text-dim);
+  color: var(--muted);
   margin: -6px 0 0;
   line-height: 1.45;
 }
@@ -811,7 +791,7 @@ body.concept-open #outlet {
   padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -853,7 +833,7 @@ body.concept-open #outlet {
   font-size: 13px;
 }
 .gd-stat-label {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .gd-stat-value {
   font-variant-numeric: tabular-nums;
@@ -873,7 +853,7 @@ body.concept-open #outlet {
   margin-bottom: 12px;
 }
 .gd-explanation p {
-  color: var(--text-dim);
+  color: var(--muted);
   margin: 0 0 12px;
 }
 .gd-explanation strong {
@@ -948,7 +928,7 @@ body.concept-open #outlet {
   transition: none;
 }
 .ga-agent {
-  fill: var(--text-dim);
+  fill: var(--muted);
   opacity: 0.55;
 }
 .ga-agent--done {
@@ -985,7 +965,7 @@ body.concept-open #outlet {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-dim);
+  color: var(--muted);
   margin-bottom: 8px;
 }
 .ga-graph-legend {
@@ -1010,7 +990,7 @@ body.concept-open #outlet {
   color: var(--accent);
 }
 .ga-legend--avg {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ga-graph {
   width: 100%;
@@ -1029,7 +1009,7 @@ body.concept-open #outlet {
 }
 .ga-graph-avg {
   fill: none;
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
   stroke-linejoin: round;
@@ -1045,7 +1025,7 @@ body.concept-open #outlet {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ga-controls-title::before {
   content: ">";
@@ -1075,12 +1055,12 @@ body.concept-open #outlet {
   background: rgba(255, 176, 0, 0.2);
 }
 .ga-status[data-status="stuck"] {
-  color: var(--accent-warn);
+  color: var(--warn);
   border-color: rgba(255, 106, 43, 0.5);
   background: rgba(255, 106, 43, 0.14);
 }
 .ga-status[data-status="high-mutation"] {
-  color: var(--accent-bad);
+  color: var(--danger);
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.16);
 }
@@ -1097,7 +1077,7 @@ body.concept-open #outlet {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ga-slider-value {
   font-variant-numeric: tabular-nums;
@@ -1120,7 +1100,7 @@ body.concept-open #outlet {
   padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -1160,7 +1140,7 @@ body.concept-open #outlet {
   width: 100%;
   padding: 8px 10px;
   border-radius: 4px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text-h);
   border: 1px solid var(--border);
   font: inherit;
@@ -1171,7 +1151,7 @@ body.concept-open #outlet {
 }
 .ga-note {
   font-size: 12.5px;
-  color: var(--text-dim);
+  color: var(--muted);
   margin: 2px 0 0;
   line-height: 1.45;
 }
@@ -1198,7 +1178,7 @@ body.concept-open #outlet {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--text-dim);
+  color: var(--muted);
   cursor: pointer;
 }
 .ga-check {
@@ -1220,7 +1200,7 @@ body.concept-open #outlet {
   font-size: 13px;
 }
 .ga-stat-label {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ga-stat-value {
   font-variant-numeric: tabular-nums;
@@ -1240,7 +1220,7 @@ body.concept-open #outlet {
   margin-bottom: 12px;
 }
 .ga-explanation p {
-  color: var(--text-dim);
+  color: var(--muted);
   margin: 0 0 12px;
 }
 .ga-explanation strong {
@@ -1275,7 +1255,7 @@ body.concept-open #outlet {
   stroke-width: 1;
 }
 .ev-marker-label {
-  fill: var(--text-dim);
+  fill: var(--muted);
   font-family: var(--font-mono);
   font-size: 11px;
 }
@@ -1287,7 +1267,7 @@ body.concept-open #outlet {
 }
 .ev-ghost {
   fill: none;
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
   stroke-dasharray: 3 4;
   opacity: 0.5;
@@ -1301,17 +1281,17 @@ body.concept-open #outlet {
 /* the crowd is drawn grey; only the champion is coloured (like ga-agent--best) */
 .ev-chassis {
   fill: rgba(120, 120, 120, 0.12);
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 2;
   stroke-linejoin: round;
 }
 .ev-wheel {
   fill: rgba(11, 11, 10, 0.85);
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 2.5;
 }
 .ev-spoke {
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
 }
 .ev-fleet .ev-vehicle {
@@ -1340,7 +1320,7 @@ body.concept-open #outlet {
 .ev-seg-group {
   display: flex;
   gap: 6px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 4px;
@@ -1352,7 +1332,7 @@ body.concept-open #outlet {
   border-radius: 6px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--muted);
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -1370,7 +1350,7 @@ body.concept-open #outlet {
 }
 .ev-note {
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--muted);
   margin: 0 0 8px;
   line-height: 1.4;
 }
@@ -1385,7 +1365,7 @@ body.concept-open #outlet {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ev-controls-title::before {
   content: ">";
@@ -1403,7 +1383,7 @@ body.concept-open #outlet {
   font-variant-numeric: tabular-nums;
 }
 .ev-status[data-status="chaos"] {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ev-status[data-status="improving"],
 .ev-status[data-status="champion"] {
@@ -1412,12 +1392,12 @@ body.concept-open #outlet {
   background: rgba(255, 176, 0, 0.16);
 }
 .ev-status[data-status="stuck"] {
-  color: var(--accent-warn);
+  color: var(--warn);
   border-color: rgba(255, 106, 43, 0.5);
   background: rgba(255, 106, 43, 0.14);
 }
 .ev-status[data-status="high-mutation"] {
-  color: var(--accent-bad);
+  color: var(--danger);
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.16);
 }
@@ -1434,7 +1414,7 @@ body.concept-open #outlet {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ev-slider-value {
   font-variant-numeric: tabular-nums;
@@ -1451,7 +1431,7 @@ body.concept-open #outlet {
   width: 100%;
   padding: 8px 10px;
   border-radius: 4px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text-h);
   border: 1px solid var(--border);
   font: inherit;
@@ -1470,7 +1450,7 @@ body.concept-open #outlet {
   padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -1504,7 +1484,7 @@ body.concept-open #outlet {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--text-dim);
+  color: var(--muted);
   cursor: pointer;
 }
 .ev-check {
@@ -1525,7 +1505,7 @@ body.concept-open #outlet {
   gap: 12px;
 }
 .ev-stat-label {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ev-stat-value {
   font-variant-numeric: tabular-nums;
@@ -1560,7 +1540,7 @@ body.concept-open #outlet {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-dim);
+  color: var(--muted);
   margin-bottom: 6px;
 }
 .ev-graph-legend {
@@ -1585,7 +1565,7 @@ body.concept-open #outlet {
   color: var(--accent);
 }
 .ev-legend--avg {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ev-graph {
   width: 100%;
@@ -1604,7 +1584,7 @@ body.concept-open #outlet {
 }
 .ev-graph-avg {
   fill: none;
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
   stroke-linejoin: round;
@@ -1615,7 +1595,7 @@ body.concept-open #outlet {
   margin-bottom: 12px;
 }
 .ev-explanation p {
-  color: var(--text-dim);
+  color: var(--muted);
   margin: 0 0 12px;
 }
 .ev-explanation strong {
@@ -1650,7 +1630,7 @@ body.concept-open #outlet {
   stroke-width: 1;
 }
 .ec-marker-label {
-  fill: var(--text-dim);
+  fill: var(--muted);
   font-family: var(--font-mono);
   font-size: 11px;
 }
@@ -1662,7 +1642,7 @@ body.concept-open #outlet {
 }
 .ec-ghost {
   fill: none;
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
   stroke-dasharray: 3 4;
   opacity: 0.5;
@@ -1676,13 +1656,13 @@ body.concept-open #outlet {
 /* the crowd is drawn grey; only the champion is coloured (like ga-agent--best) */
 .ec-body {
   fill: rgba(120, 120, 120, 0.14);
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 2;
   stroke-linejoin: round;
 }
 .ec-limb {
   fill: none;
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -1691,7 +1671,7 @@ body.concept-open #outlet {
 }
 .ec-com {
   fill: none;
-  stroke: var(--accent-warn);
+  stroke: var(--warn);
   stroke-width: 2;
 }
 .ec-fleet .ec-creature {
@@ -1720,7 +1700,7 @@ body.concept-open #outlet {
 .ec-seg-group {
   display: flex;
   gap: 6px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 4px;
@@ -1732,7 +1712,7 @@ body.concept-open #outlet {
   border-radius: 6px;
   border: 1px solid transparent;
   background: transparent;
-  color: var(--text-dim);
+  color: var(--muted);
   font: inherit;
   font-size: 12px;
   font-weight: 600;
@@ -1750,7 +1730,7 @@ body.concept-open #outlet {
 }
 .ec-note {
   font-size: 12px;
-  color: var(--text-dim);
+  color: var(--muted);
   margin: 0 0 8px;
   line-height: 1.4;
 }
@@ -1765,7 +1745,7 @@ body.concept-open #outlet {
   font-size: 13px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ec-controls-title::before {
   content: ">";
@@ -1784,7 +1764,7 @@ body.concept-open #outlet {
 }
 .ec-status[data-status="chaos"],
 .ec-status[data-status="dragging"] {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ec-status[data-status="improving"],
 .ec-status[data-status="crawler"] {
@@ -1794,12 +1774,12 @@ body.concept-open #outlet {
 }
 .ec-status[data-status="stuck"],
 .ec-status[data-status="spinning"] {
-  color: var(--accent-warn);
+  color: var(--warn);
   border-color: rgba(255, 106, 43, 0.5);
   background: rgba(255, 106, 43, 0.14);
 }
 .ec-status[data-status="high-mutation"] {
-  color: var(--accent-bad);
+  color: var(--danger);
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.16);
 }
@@ -1816,7 +1796,7 @@ body.concept-open #outlet {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ec-slider-value {
   font-variant-numeric: tabular-nums;
@@ -1833,7 +1813,7 @@ body.concept-open #outlet {
   width: 100%;
   padding: 8px 10px;
   border-radius: 4px;
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text-h);
   border: 1px solid var(--border);
   font: inherit;
@@ -1852,7 +1832,7 @@ body.concept-open #outlet {
   padding: 9px 12px;
   border-radius: 8px;
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -1891,7 +1871,7 @@ body.concept-open #outlet {
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: var(--text-dim);
+  color: var(--muted);
   cursor: pointer;
 }
 .ec-check {
@@ -1912,7 +1892,7 @@ body.concept-open #outlet {
   gap: 12px;
 }
 .ec-stat-label {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ec-stat-value {
   font-variant-numeric: tabular-nums;
@@ -1947,7 +1927,7 @@ body.concept-open #outlet {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--text-dim);
+  color: var(--muted);
   margin-bottom: 6px;
 }
 .ec-graph-legend {
@@ -1972,7 +1952,7 @@ body.concept-open #outlet {
   color: var(--accent);
 }
 .ec-legend--avg {
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .ec-graph {
   width: 100%;
@@ -1991,7 +1971,7 @@ body.concept-open #outlet {
 }
 .ec-graph-avg {
   fill: none;
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
   stroke-dasharray: 4 3;
   stroke-linejoin: round;
@@ -2002,7 +1982,7 @@ body.concept-open #outlet {
   margin-bottom: 12px;
 }
 .ec-explanation p {
-  color: var(--text-dim);
+  color: var(--muted);
   margin: 0 0 12px;
 }
 .ec-explanation strong {
@@ -2037,7 +2017,7 @@ body.concept-open #outlet {
   stroke-width: 1;
 }
 .es-marker-label {
-  fill: var(--text-dim);
+  fill: var(--muted);
   font-family: var(--font-mono);
   font-size: 11px;
 }
@@ -2052,7 +2032,7 @@ body.concept-open #outlet {
   opacity: 0.55;
 }
 .es-sign-post {
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 2;
   stroke-linecap: round;
 }
@@ -2068,7 +2048,7 @@ body.concept-open #outlet {
 }
 .es-ghost {
   fill: none;
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
   stroke-dasharray: 3 4;
   opacity: 0.5;
@@ -2082,7 +2062,7 @@ body.concept-open #outlet {
 /* the crowd is drawn grey; only the leader is coloured */
 .es-part {
   fill: rgba(120, 120, 120, 0.14);
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 2;
   stroke-linejoin: round;
 }
@@ -2093,7 +2073,7 @@ body.concept-open #outlet {
   fill: rgba(120, 120, 120, 0.2);
 }
 .es-spoke {
-  stroke: var(--text-dim);
+  stroke: var(--muted);
   stroke-width: 1.5;
 }
 .es-joint {
@@ -2101,7 +2081,7 @@ body.concept-open #outlet {
 }
 .es-com {
   fill: none;
-  stroke: var(--accent-warn);
+  stroke: var(--warn);
   stroke-width: 2;
 }
 .es-fleet .es-pheno {
@@ -2125,7 +2105,7 @@ body.concept-open #outlet {
   fill: var(--accent);
 }
 .ec-status[data-status="no-signal"] {
-  color: var(--accent-bad);
+  color: var(--danger);
   border-color: rgba(255, 107, 107, 0.5);
   background: rgba(255, 107, 107, 0.16);
 }
@@ -2143,7 +2123,7 @@ body.concept-open #outlet {
   padding: 10px 12px;
   border-radius: 9px;
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text);
   font: inherit;
   cursor: pointer;
@@ -2164,7 +2144,7 @@ body.concept-open #outlet {
 }
 .es-template-sub {
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--muted);
   line-height: 1.35;
 }
 
@@ -2179,7 +2159,7 @@ body.concept-open #outlet {
   padding: 8px;
   border-radius: 4px;
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text);
 }
 .es-formula-input:focus {
@@ -2196,7 +2176,7 @@ body.concept-open #outlet {
   color: var(--accent);
 }
 .es-formula-status[data-ok="false"] {
-  color: var(--accent-bad);
+  color: var(--danger);
 }
 .es-chips {
   display: flex;
@@ -2211,7 +2191,7 @@ body.concept-open #outlet {
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--bg);
-  color: var(--text-dim);
+  color: var(--muted);
   cursor: pointer;
   transition:
     border-color 0.12s,
@@ -2255,7 +2235,7 @@ body.concept-open #outlet {
   font-variant-numeric: tabular-nums;
 }
 .es-breakdown-label {
-  color: var(--text-dim);
+  color: var(--muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -2264,7 +2244,7 @@ body.concept-open #outlet {
   color: var(--accent);
 }
 .es-breakdown-minus {
-  color: var(--accent-warn);
+  color: var(--warn);
 }
 
 /* gene range editor */
@@ -2292,14 +2272,14 @@ body.concept-open #outlet {
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .es-gene-mut {
   display: flex;
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  color: var(--text-dim);
+  color: var(--muted);
 }
 .es-num {
   width: 52px;
@@ -2309,7 +2289,7 @@ body.concept-open #outlet {
   padding: 3px 5px;
   border-radius: 4px;
   border: 1px solid var(--border);
-  background: var(--bg-2);
+  background: var(--panel-2);
   color: var(--text);
 }
 .es-num:focus {
