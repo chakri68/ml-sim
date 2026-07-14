@@ -86,8 +86,12 @@
          and its styles are applied, then reveal — kills the flash of unstyled
          HTML (Vite injects CSS via JS in dev; also guards a slow first load). -->
     <style>
-      html { background: #000; }
-      body { visibility: hidden; }
+      html {
+        background: #000;
+      }
+      body {
+        visibility: hidden;
+      }
     </style>
     <script>
       addEventListener("DOMContentLoaded", function () {
@@ -96,7 +100,13 @@
         });
       });
     </script>
-    <noscript><style>body { visibility: visible; }</style></noscript>
+    <noscript
+      ><style>
+        body {
+          visibility: visible;
+        }
+      </style></noscript
+    >
     <!-- Amber Phosphor theme tokens — single source of truth -->
     <link rel="stylesheet" href="https://theme.chakri.me/tokens.css" />
 
@@ -136,6 +146,14 @@
         ]
       }
     </script>
+
+    <!-- Cloudflare Web Analytics -->
+    <script
+      type="module"
+      src="https://static.cloudflareinsights.com/beacon.min.js"
+      data-cf-beacon='{"token": "bffb3a75eac340928ade649f04a73c6d"}'
+    ></script>
+    <!-- End Cloudflare Web Analytics -->
   </head>
   <body>
     <div id="app"></div>
