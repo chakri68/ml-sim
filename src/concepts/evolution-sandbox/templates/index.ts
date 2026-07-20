@@ -5,6 +5,7 @@
 
 import { roverTemplate } from "./rover.ts";
 import { crawlerTemplate } from "./crawler.ts";
+import { reflexCrawlerTemplate } from "./reflex-crawler.ts";
 import { hybridTemplate } from "./hybrid.ts";
 import { jumperTemplate } from "./jumper.ts";
 import { flipperTemplate } from "./flipper.ts";
@@ -13,6 +14,7 @@ import type { Template } from "../types.ts";
 export const templates: Template[] = [
   roverTemplate,
   crawlerTemplate,
+  reflexCrawlerTemplate,
   hybridTemplate,
   jumperTemplate,
   flipperTemplate,
