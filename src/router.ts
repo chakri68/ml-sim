@@ -44,7 +44,7 @@ export function startRouter(outlet: HTMLElement) {
       const concept = findConcept(match[1]);
       if (concept) {
         cleanup = concept.mount(outlet);
-        setMeta(`${concept.title} — ${SITE_NAME}`, concept.description);
+        setMeta(`${concept.title} · ${SITE_NAME}`, concept.description);
         window.scrollTo(0, 0);
         fadeIn(outlet);
         return;
@@ -52,7 +52,7 @@ export function startRouter(outlet: HTMLElement) {
     }
     cleanup = renderHome(outlet);
     setMeta(
-      `${SITE_NAME} — Interactive Machine Learning, Visualized`,
+      `${SITE_NAME}: Interactive Machine Learning, Visualized`,
       HOME_DESCRIPTION,
     );
     window.scrollTo(0, 0);
