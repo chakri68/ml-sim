@@ -60,6 +60,29 @@ per-term **fitness breakdown** shows you _why_ the champion won. Presets get you
 started, metric chips grey out anything a given body can't actually move, and you
 can export/import an experiment as JSON to share a cursed creation.
 
+### Neural Lander
+
+The first exhibit where a **neural network** does the driving. A rover with real
+sensors — range rays, velocity, tilt, spin, leg contacts, a beacon pointing at the
+pad — feeds a tiny feed-forward net, whose outputs are thruster throttles. Sixty
+times a second: sense, think, burn, fall.
+
+Nobody backpropagates anything. Generation 1 is random weights wired to real
+engines, and it goes about as well as that sounds. Selection does the rest, and
+you watch the failure mode itself evolve: craters, then hovering, then soft
+landings in the wrong place, then landings on the pad.
+
+Two things make it more than a light show. The flight you watch **is** one of the
+scored episodes — same code as the worker that scores the rest, checked at
+runtime — and every champion is also flown on terrain it never trained on. The gap
+between those two lines is overfitting, live, in a chart:
+
+> Landing 90% of the time on four terrains you memorized is not the same as
+> knowing how to land.
+
+Switch sensors off and watch it cope (or not). Rewrite the reward and watch it
+hover forever because you paid it to stay alive.
+
 ## Stack
 
 Vanilla **TypeScript + Vite**. No UI framework — the DOM was right there and I
@@ -94,6 +117,7 @@ src/concepts/genetic-algorithms/  maze-solving GA
 src/concepts/evolving-vehicles/   planck cars over terrain
 src/concepts/evolving-creatures/  planck two-limbed crawler, evolved gait
 src/concepts/evolution-sandbox/   templates + gene-range editor + fitness DSL + breakdown
+src/concepts/neural-lander/       sensors -> neural net -> thrusters, evolved; live network view
 ```
 
 Three.js, mathjs, and planck are the heavy tenants, so each concept's `engine.ts`
